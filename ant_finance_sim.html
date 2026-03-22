@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>개미 재테크 시뮬레이터</title>
+<style>
+  /* ── RESET & BASE ── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f1a0f;
+    color: #d4e8c2;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 2rem;
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 4px;
+    text-shadow: 0 0 20px #ffd70088;
+  }
+  .subtitle { color: #6aaa3a; font-size: 0.9rem; text-align: center; margin-bottom: 20px; }
+
+  /* ── LAYOUT ── */
+  .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 16px; }
+
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+
+  /* ── CARD ── */
+  .card {
+    background: #1a2e1a;
+    border: 1px solid #2d5a1b;
+    border-radius: 12px;
+    padding: 18px;
+    flex: 1;
+    min-width: 240px;
+  }
+  .card h2 { font-size: 1rem; color: #ffd700; margin-bottom: 12px; }
+
+  /* ── STATS ── */
+  .stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.92rem; }
+  .stat .label { color: #8ab870; }
+  .stat .value { color: #ffd700; font-weight: bold; }
+  .stat .value.red { color: #ff6b6b; }
+  .stat .value.green { color: #6aff6a; }
+
+  /* ── ANT COLONY VISUAL ── */
+  #colony-display {
+    text-align: center;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin: 8px 0;
+    min-height: 40px;
+    word-break: break-all;
+  }
+
+  /* ── INVESTMENT OPTIONS ── */
+  .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .inv-btn {
+    background: #0f1a0f;
+    border: 1px solid #2d5a1b;
+    border-radius: 8px;
+    padding: 12px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: #d4e8c2;
+  }
+  .inv-btn:hover { border-color: #ffd700; background: #1f3a1f; transform: translateY(-2px); }
+  .inv-btn:active { transform: translateY(0); }
+  .inv-btn .inv-name { font-size: 0.85rem; font-weight: bold; color: #ffd700; }
+  .inv-btn .inv-rate { font-size: 0.78rem; color: #8ab870; margin: 3px 0; }
+  .inv-btn .inv-risk { font-size: 0.72rem; }
+
+  /* ── AMOUNT SLIDER ── */
+  .slider-wrap { margin: 10px 0; }
+  .slider-wrap label { font-size: 0.85rem; color: #8ab870; display: block; margin-bottom: 4px; }
+  input[type=range] {
+    width: 100%;
+    accent-color: #ffd700;
+    cursor: pointer;
+  }
+  .slider-value { text-align: right; font-size: 0.85rem; color: #ffd700; }
+
+  /* ── CONTROLS ── */
+  .btn {
+    background: #2d5a1b;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    color: #ffd700;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn:hover { background: #3d7a2b; }
+  .btn.danger { background: #5a1b1b; color: #ff9999; }
+  .btn.danger:hover { background: #7a2b2b; }
+
+  /* ── LOG ── */
+  #log {
+    height: 160px;
+    overflow-y: auto;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: #8ab870;
+    background: #0f1a0f;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #1f3a1f;
+  }
+  #log .entry { border-bottom: 1px solid #1f3a1f; padding: 2px 0; }
+  #log .entry.profit { color: #6aff6a; }
+  #log .entry.loss { color: #ff6b6b; }
+  #log .entry.info { color: #ffd700; }
+
+  /* ── TURN ── */
+  .turn-info { text-align: center; font-size: 0.85rem; color: #6aaa3a; margin-top: -8px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { margin: 8px 0; }
+  .progress-label { font-size: 0.78rem; color: #8ab870; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .progress-bar { background: #0f1a0f; border-radius: 20px; height: 12px; overflow: hidden; border: 1px solid #2d5a1b; }
+  .progress-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg, #2d5a1b, #ffd700); transition: width 0.4s; }
+
+  /* ── GAME OVER ── */
+  #gameover {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: #000000cc;
+    justify-content: center; align-items: center;
+    z-index: 99;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #gameover h2 { font-size: 2.5rem; color: #ffd700; text-shadow: 0 0 30px #ffd700; }
+  #gameover p { color: #d4e8c2; font-size: 1.1rem; }
+
+  .inflation-warn { color: #ff9944; font-size: 0.78rem; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>🐜 개미 재테크 시뮬레이터</h1>
+<p class="subtitle">개미 콜로니를 키우며 부를 쌓아라! | ant money_bot × AntIdea_bot</p>
+
+<div class="container">
+
+  <!-- ROW 1: Colony + Stats -->
+  <div class="row">
+    <!-- Colony -->
+    <div class="card" style="flex:1.2">
+      <h2>🏠 내 콜로니</h2>
+      <div id="colony-display">🐜</div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>콜로니 규모</span>
+          <span id="colony-size-label">1 / 100</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="colony-bar" style="width:1%"></div></div>
+      </div>
+      <div class="turn-info">📅 <span id="turn-display">1</span>분기 | 🌡️ 인플레이션: <span id="inflation-display">3.0</span>%</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card" style="flex:1">
+      <h2>💰 재정 현황</h2>
+      <div class="stat"><span class="label">보유 자원</span><span class="value" id="stat-cash">1,000</span></div>
+      <div class="stat"><span class="label">투자 자산</span><span class="value green" id="stat-invested">0</span></div>
+      <div class="stat"><span class="label">저축 (연 2%)</span><span class="value" id="stat-savings">0</span></div>
+      <div class="stat"><span class="label">순자산</span><span class="value" id="stat-net">1,000</span></div>
+      <div class="stat"><span class="label">실질 구매력</span><span class="value" id="stat-real">1,000</span></div>
+      <div class="stat"><span class="label">목표</span><span class="value">10,000</span></div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="goal-bar" style="width:10%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Invest + Actions -->
+  <div class="row">
+    <!-- Investments -->
+    <div class="card" style="flex:1.5">
+      <h2>📈 투자 선택</h2>
+      <div class="inv-grid">
+        <button class="inv-btn" onclick="invest('savings')">
+          <div class="inv-name">💵 저축</div>
+          <div class="inv-rate">연 2% 확정</div>
+          <div class="inv-risk">🟢 리스크 없음</div>
+        </button>
+        <button class="inv-btn" onclick="invest('bond')">
+          <div class="inv-name">📜 채권</div>
+          <div class="inv-rate">연 4~6%</div>
+          <div class="inv-risk">🟡 낮은 리스크</div>
+        </button>
+        <button class="inv-btn" onclick="invest('stock')">
+          <div class="inv-name">📊 주식</div>
+          <div class="inv-rate">-20% ~ +30%</div>
+          <div class="inv-risk">🟠 중간 리스크</div>
+        </button>
+        <button class="inv-btn" onclick="invest('crypto')">
+          <div class="inv-name">🪙 코인</div>
+          <div class="inv-rate">-50% ~ +100%</div>
+          <div class="inv-risk">🔴 매우 높음</div>
+        </button>
+      </div>
+      <div class="slider-wrap" style="margin-top:12px">
+        <label>투자 금액: <span id="inv-amount-label" class="slider-value">500</span></label>
+        <input type="range" id="inv-amount" min="10" max="1000" step="10" value="500" oninput="updateSlider()">
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card" style="flex:1">
+      <h2>⚡ 행동</h2>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn" onclick="nextTurn()">⏭️ 다음 분기</button>
+        <button class="btn" onclick="withdrawSavings()">🏦 저축 인출</button>
+        <button class="btn" onclick="withdrawInvested()">💸 투자 회수</button>
+        <button class="btn" onclick="buyAnts()">🐜 일개미 고용 (50)</button>
+        <button class="btn danger" onclick="resetGame()">🔄 처음부터</button>
+      </div>
+      <p class="inflation-warn" style="margin-top:10px">⚠️ 인플레이션으로 현금 가치 하락!</p>
+    </div>
+  </div>
+
+  <!-- ROW 3: Log -->
+  <div class="card">
+    <h2>📋 거래 로그</h2>
+    <div id="log"></div>
+  </div>
+
+</div>
+
+<!-- GAME OVER -->
+<div id="gameover">
+  <h2 id="gameover-title">🏆 승리!</h2>
+  <p id="gameover-msg"></p>
+  <button class="btn" onclick="resetGame()">다시 시작</button>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// FINANCIAL LOGIC ENGINE — by ant money_bot
+// ══════════════════════════════════════
+
+const INVESTMENT_PROFILES = {
+  savings: {
+    name: '저축',
+    returns: () => 0.02 / 4,          // 연 2% → 분기 0.5% 확정
+    risk: 0,
+  },
+  bond: {
+    name: '채권',
+    returns: () => (randBetween(4, 6) / 100) / 4,
+    risk: 0.05,                        // 5% 확률로 원금 일부 손실
+  },
+  stock: {
+    name: '주식',
+    returns: () => randBetween(-20, 30) / 100 / 4,
+    risk: 0.15,
+  },
+  crypto: {
+    name: '코인',
+    returns: () => randBetween(-50, 100) / 100 / 4,
+    risk: 0.25,
+  },
+};
+
+// Game state
+let state = {};
+
+function initState() {
+  state = {
+    cash: 1000,
+    savings: 0,         // in savings account
+    invested: 0,        // in market investments
+    investType: null,
+    ants: 1,
+    turn: 1,
+    inflation: 0.03,    // annual 3% → quarterly
+    inflationFactor: 1, // cumulative price level
+    basePurchasingPower: 1000,
+  };
+}
+
+function randBetween(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+// Compound interest for savings (quarterly)
+function applySavingsInterest() {
+  const rate = 0.02 / 4;
+  const interest = Math.round(state.savings * rate);
+  state.savings += interest;
+  return interest;
+}
+
+// Quarterly inflation step
+function applyInflation() {
+  const qRate = state.inflation / 4;
+  state.inflationFactor *= (1 + qRate);
+  // Slight drift: inflation can change ±0.5% per year (±0.125% per quarter)
+  state.inflation = Math.max(0.01, Math.min(0.08,
+    state.inflation + randBetween(-0.00125, 0.00125)
+  ));
+}
+
+// Real purchasing power = nominal / cumulative price level
+function realValue(nominal) {
+  return Math.round(nominal / state.inflationFactor);
+}
+
+function netWorth() {
+  return state.cash + state.savings + state.invested;
+}
+
+// ── INVEST ──
+function invest(type) {
+  const amount = parseInt(document.getElementById('inv-amount').value);
+  if (amount > state.cash) {
+    addLog(`현금 부족! (보유: ${fmt(state.cash)})`, 'loss');
+    return;
+  }
+  const profile = INVESTMENT_PROFILES[type];
+  const ret = profile.returns();
+  const gain = Math.round(amount * ret);
+
+  state.cash -= amount;
+
+  if (type === 'savings') {
+    state.savings += amount;
+    addLog(`${profile.name} ${fmt(amount)} 예치 완료 (연 2% 복리)`, 'info');
+  } else {
+    const loss_event = Math.random() < profile.risk;
+    if (loss_event) {
+      const lossRate = randBetween(0.05, 0.15);
+      const lost = Math.round(amount * lossRate);
+      state.invested += (amount - lost);
+      addLog(`⚠️ ${profile.name} 리스크 발생! ${fmt(lost)} 손실 후 ${fmt(amount - lost)} 투자`, 'loss');
+    } else {
+      state.invested += amount;
+      addLog(`${profile.name} ${fmt(amount)} 투자 시작 (예상 분기 수익: ${gain >= 0 ? '+' : ''}${fmt(gain)})`, 'info');
+    }
+    state.investType = type;
+  }
+  updateUI();
+}
+
+// ── NEXT TURN ──
+function nextTurn() {
+  state.turn++;
+
+  // 1. Savings interest (compound, quarterly)
+  const interest = applySavingsInterest();
+  if (interest > 0) addLog(`💵 저축 이자 +${fmt(interest)} (복리 적용)`, 'profit');
+
+  // 2. Investment returns
+  if (state.invested > 0 && state.investType) {
+    const profile = INVESTMENT_PROFILES[state.investType];
+    const ret = profile.returns();
+    const gain = Math.round(state.invested * ret);
+    state.invested += gain;
+    if (state.invested < 0) state.invested = 0;
+    const emoji = gain >= 0 ? '📈' : '📉';
+    const cls = gain >= 0 ? 'profit' : 'loss';
+    addLog(`${emoji} ${profile.name} 수익: ${gain >= 0 ? '+' : ''}${fmt(gain)} (${(ret * 400).toFixed(1)}% 연환산)`, cls);
+  }
+
+  // 3. Ant colony income: each ant produces 10 per quarter
+  const antIncome = state.ants * 10;
+  state.cash += antIncome;
+  addLog(`🐜 개미 ${state.ants}마리 → +${fmt(antIncome)} 자원 생산`, 'profit');
+
+  // 4. Inflation erodes cash value (visible warning)
+  applyInflation();
+  addLog(`🌡️ 인플레이션 ${(state.inflation * 100).toFixed(1)}% — 실질 구매력 하락 중`, 'loss');
+
+  // 5. Check win/lose
+  if (netWorth() >= 10000) {
+    endGame(true);
+    return;
+  }
+  if (netWorth() <= 0) {
+    endGame(false);
+    return;
+  }
+
+  updateUI();
+}
+
+// ── ACTIONS ──
+function withdrawSavings() {
+  if (state.savings <= 0) { addLog('저축 잔액 없음', 'loss'); return; }
+  const amt = state.savings;
+  state.cash += amt;
+  state.savings = 0;
+  addLog(`🏦 저축 전액 인출: +${fmt(amt)}`, 'info');
+  updateUI();
+}
+
+function withdrawInvested() {
+  if (state.invested <= 0) { addLog('투자 자산 없음', 'loss'); return; }
+  const amt = state.invested;
+  state.cash += amt;
+  state.invested = 0;
+  state.investType = null;
+  addLog(`💸 투자 전액 회수: +${fmt(amt)}`, 'info');
+  updateUI();
+}
+
+function buyAnts() {
+  const cost = 50;
+  if (state.cash < cost) { addLog(`일개미 고용 비용: ${cost} (현금 부족)`, 'loss'); return; }
+  state.cash -= cost;
+  state.ants++;
+  addLog(`🐜 일개미 고용! (총 ${state.ants}마리) -${cost}`, 'info');
+  updateUI();
+}
+
+// ── UI ──
+function fmt(n) {
+  return Math.round(n).toLocaleString('ko-KR');
+}
+
+function updateSlider() {
+  const v = document.getElementById('inv-amount').value;
+  document.getElementById('inv-amount-label').textContent = fmt(v);
+  // Cap slider to available cash
+  const maxVal = Math.max(10, Math.floor(state.cash / 10) * 10);
+  document.getElementById('inv-amount').max = Math.min(maxVal, 100000);
+}
+
+function updateUI() {
+  const nw = netWorth();
+  document.getElementById('stat-cash').textContent = fmt(state.cash);
+  document.getElementById('stat-invested').textContent = fmt(state.invested);
+  document.getElementById('stat-savings').textContent = fmt(state.savings);
+  document.getElementById('stat-net').textContent = fmt(nw);
+  document.getElementById('stat-real').textContent = fmt(realValue(nw));
+
+  document.getElementById('turn-display').textContent = state.turn;
+  document.getElementById('inflation-display').textContent = (state.inflation * 100).toFixed(1);
+
+  // Colony display
+  const antCount = Math.min(state.ants, 30);
+  document.getElementById('colony-display').textContent = '🐜'.repeat(antCount) + (state.ants > 30 ? ` +${state.ants - 30}` : '');
+  document.getElementById('colony-size-label').textContent = `${state.ants} / 100마리`;
+  document.getElementById('colony-bar').style.width = Math.min(state.ants, 100) + '%';
+
+  // Goal progress
+  const goalPct = Math.min((nw / 10000) * 100, 100);
+  document.getElementById('goal-bar').style.width = goalPct + '%';
+
+  // Slider max sync
+  updateSlider();
+}
+
+function addLog(msg, type = '') {
+  const log = document.getElementById('log');
+  const el = document.createElement('div');
+  el.className = `entry ${type}`;
+  el.textContent = `[Q${state.turn}] ${msg}`;
+  log.prepend(el);
+}
+
+function endGame(won) {
+  const overlay = document.getElementById('gameover');
+  overlay.style.display = 'flex';
+  if (won) {
+    document.getElementById('gameover-title').textContent = '🏆 승리!';
+    document.getElementById('gameover-msg').textContent =
+      `${state.turn}분기 만에 목표 달성! 최종 순자산: ${fmt(netWorth())} | 개미: ${state.ants}마리`;
+  } else {
+    document.getElementById('gameover-title').textContent = '💸 파산...';
+    document.getElementById('gameover-msg').textContent =
+      `${state.turn}분기에 자산이 모두 소진되었습니다. 다시 도전하세요!`;
+  }
+}
+
+function resetGame() {
+  document.getElementById('gameover').style.display = 'none';
+  document.getElementById('log').innerHTML = '';
+  initState();
+  updateUI();
+  addLog('게임 시작! 목표: 순자산 10,000 달성', 'info');
+}
+
+// START
+initState();
+updateUI();
+addLog('게임 시작! 목표: 순자산 10,000 달성', 'info');
+</script>
+</body>
+</html>
