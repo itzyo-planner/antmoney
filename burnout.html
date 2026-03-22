@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한국 직장인 번아웃 지수 테스트</title>
+<meta property="og:title" content="나의 번아웃 지수는? 🔥">
+<meta property="og:description" content="5문항으로 알아보는 나의 직장인 유형">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a10;
+  --card:#12121e;
+  --border:#1e1e35;
+  --accent:#7c6fff;
+  --accent2:#ff6b9d;
+  --text:#e8e8f0;
+  --dim:#5a5a80;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:30px 16px 60px;
+  background-image:radial-gradient(ellipse at 50% 0%,#1a1a3a44,transparent 60%);
+}
+
+/* HEADER */
+.hdr{text-align:center;margin-bottom:36px}
+.hdr h1{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#7c6fff,#ff6b9d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.3}
+.hdr p{color:var(--dim);font-size:0.85rem;margin-top:8px}
+
+/* PROGRESS */
+.progress-wrap{width:100%;max-width:480px;margin-bottom:28px}
+.progress-top{display:flex;justify-content:space-between;font-size:0.78rem;color:var(--dim);margin-bottom:8px}
+.progress-top span{color:var(--accent);font-weight:700}
+.progress-track{height:6px;background:#1e1e35;border-radius:20px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:20px;transition:width 0.4s cubic-bezier(.4,0,.2,1)}
+
+/* QUESTION CARD */
+.q-card{
+  width:100%;max-width:480px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px 24px;
+  box-shadow:0 8px 40px #00000060;
+}
+.q-num{font-size:0.75rem;color:var(--accent);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.q-text{font-size:1.1rem;font-weight:700;line-height:1.5;margin-bottom:24px;color:#fff}
+
+/* OPTIONS */
+.options{display:flex;flex-direction:column;gap:10px}
+.opt-btn{
+  background:#0d0d1a;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px 18px;
+  text-align:left;
+  cursor:pointer;
+  transition:all 0.18s;
+  color:var(--text);
+  font-size:0.9rem;
+  font-family:inherit;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  line-height:1.4;
+}
+.opt-btn:hover{border-color:var(--accent);background:#161625;transform:translateX(4px)}
+.opt-btn.selected{border-color:var(--accent);background:linear-gradient(135deg,#1a1a35,#12122a);box-shadow:0 0 14px #7c6fff33}
+.opt-emoji{font-size:1.3rem;flex-shrink:0}
+
+/* NAV */
+.nav{display:flex;gap:10px;margin-top:20px;width:100%;max-width:480px}
+.nav-btn{
+  flex:1;
+  background:#12121e;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  color:var(--dim);
+  font-size:0.88rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:all 0.18s;
+  font-family:inherit;
+}
+.nav-btn.next{background:linear-gradient(135deg,var(--accent),#5a4fff);border:none;color:#fff;box-shadow:0 4px 16px #7c6fff44}
+.nav-btn.next:hover{box-shadow:0 6px 24px #7c6fff66;transform:translateY(-1px)}
+.nav-btn:hover{border-color:var(--border);color:var(--text)}
+.nav-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none!important}
+
+/* RESULT */
+#result{display:none;width:100%;max-width:480px}
+.result-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:36px 28px;
+  text-align:center;
+  box-shadow:0 8px 40px #00000060;
+  position:relative;
+  overflow:hidden;
+}
+.result-card::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,var(--type-color,#7c6fff)22,transparent 60%);
+  pointer-events:none;
+}
+.result-emoji{font-size:5rem;margin-bottom:12px;display:block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.result-type{font-size:0.8rem;letter-spacing:3px;font-weight:700;margin-bottom:6px}
+.result-name{font-size:2rem;font-weight:900;color:#fff;margin-bottom:16px}
+.burnout-meter{margin:16px 0 24px}
+.burnout-label{display:flex;justify-content:space-between;font-size:0.78rem;color:var(--dim);margin-bottom:8px}
+.burnout-track{height:14px;background:#0d0d1a;border-radius:20px;overflow:hidden;border:1px solid var(--border)}
+.burnout-fill{height:100%;border-radius:20px;transition:width 1s cubic-bezier(.4,0,.2,1) 0.3s}
+.burnout-pct{font-size:2.5rem;font-weight:900;margin-bottom:4px}
+.burnout-sub{font-size:0.82rem;color:var(--dim);margin-bottom:20px}
+.result-desc{font-size:0.9rem;line-height:1.7;color:#aaa;background:#0d0d1a;border-radius:12px;padding:16px;border:1px solid var(--border);text-align:left;margin-bottom:20px}
+.result-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px}
+.tag{background:#1a1a2e;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--dim)}
+.share-section{display:flex;gap:10px}
+.share-btn{
+  flex:1;
+  background:#1a1a2e;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  color:var(--text);
+  font-size:0.85rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:all 0.18s;
+  font-family:inherit;
+}
+.share-btn.main{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;box-shadow:0 4px 16px #7c6fff44}
+.share-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px #00000040}
+.retry-btn{
+  width:100%;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  color:var(--dim);
+  font-size:0.85rem;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:10px;
+  font-family:inherit;
+  transition:all 0.18s;
+}
+.retry-btn:hover{color:var(--text);border-color:var(--accent)}
+
+/* COPY TOAST */
+#toast{
+  position:fixed;bottom:30px;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:#1a1a35;border:1px solid var(--accent);
+  border-radius:30px;padding:10px 24px;
+  color:var(--accent);font-weight:700;font-size:0.85rem;
+  box-shadow:0 8px 30px #00000080;
+  transition:transform 0.3s,opacity 0.3s;opacity:0;
+  z-index:200;pointer-events:none;white-space:nowrap;
+}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* INTRO */
+#intro{width:100%;max-width:480px;text-align:center}
+.intro-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px 24px;box-shadow:0 8px 40px #00000060}
+.intro-card .big-emoji{font-size:4rem;margin-bottom:16px;display:block}
+.intro-card h2{font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:10px}
+.intro-card p{font-size:0.88rem;color:var(--dim);line-height:1.7;margin-bottom:24px}
+.types-preview{display:flex;justify-content:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.type-preview{text-align:center}
+.type-preview .te{font-size:2rem}
+.type-preview .tn{font-size:0.7rem;color:var(--dim);margin-top:4px}
+.start-btn{
+  width:100%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:14px;
+  padding:16px;color:#fff;
+  font-size:1rem;font-weight:900;
+  cursor:pointer;font-family:inherit;
+  box-shadow:0 4px 20px #7c6fff44;
+  transition:all 0.2s;
+}
+.start-btn:hover{box-shadow:0 6px 28px #7c6fff66;transform:translateY(-2px)}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div class="hdr">
+  <h1>🔥 한국 직장인<br>번아웃 지수 테스트</h1>
+  <p>5문항으로 알아보는 나의 직장인 유형</p>
+</div>
+
+<div id="intro">
+  <div class="intro-card">
+    <span class="big-emoji">😮‍💨</span>
+    <h2>나는 어떤 유형의 직장인?</h2>
+    <p>솔직하게 답하면 더 정확해요.<br>결과는 4가지 유형 중 하나로 나와요!</p>
+    <div class="types-preview">
+      <div class="type-preview"><div class="te">🐜</div><div class="tn">개미형</div></div>
+      <div class="type-preview"><div class="te">🔥</div><div class="tn">불나방형</div></div>
+      <div class="type-preview"><div class="te">🐢</div><div class="tn">거북이형</div></div>
+      <div class="type-preview"><div class="te">💀</div><div class="tn">유령형</div></div>
+    </div>
+    <button class="start-btn" onclick="startTest()">테스트 시작하기 →</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" style="display:none;width:100%;max-width:480px">
+  <div class="progress-wrap">
+    <div class="progress-top"><span id="q-count">1</span> / 5 문항<span id="q-pct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+  </div>
+  <div class="q-card">
+    <div class="q-num" id="q-num">QUESTION 01</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" id="btn-prev" onclick="prev()">← 이전</button>
+    <button class="nav-btn next" id="btn-next" onclick="next()" disabled>다음 →</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result"></div>
+<div id="toast"></div>
+
+<script>
+const QUESTIONS = [
+  {
+    text: "월요일 아침, 알람이 울렸을 때 당신의 첫 번째 반응은?",
+    opts: [
+      {e:"😤", t:"벌써 월요일이야? 시간 너무 빨라...", s:{ant:1,moth:3,turtle:0,ghost:2}},
+      {e:"💀", t:"그냥 다 때려치우고 싶다는 생각이 먼저 든다", s:{ant:0,moth:1,turtle:0,ghost:3}},
+      {e:"🐢", t:"10분만... 15분만... 30분 더 자도 되지", s:{ant:0,moth:0,turtle:3,ghost:1}},
+      {e:"🐜", t:"오늘 해야 할 일 목록이 머릿속에 펼쳐진다", s:{ant:3,moth:2,turtle:0,ghost:0}},
+    ]
+  },
+  {
+    text: "퇴근 후 당신이 가장 자주 하는 것은?",
+    opts: [
+      {e:"📱", t:"침대에 누워 유튜브/숏폼 보다가 그냥 잠든다", s:{ant:0,moth:0,turtle:2,ghost:3}},
+      {e:"💼", t:"야근하거나 퇴근 후에도 업무 생각을 한다", s:{ant:2,moth:3,turtle:0,ghost:0}},
+      {e:"🏃", t:"운동이나 취미 활동으로 기분 전환한다", s:{ant:3,moth:1,turtle:1,ghost:0}},
+      {e:"🛋️", t:"아무것도 하기 싫어서 그냥 멍하니 있는다", s:{ant:0,moth:1,turtle:1,ghost:3}},
+    ]
+  },
+  {
+    text: "팀장이 갑자기 '이거 오늘까지 해줄 수 있어요?'라고 했을 때?",
+    opts: [
+      {e:"😡", t:"속으로 욕하면서 겉으로는 '네' 한다", s:{ant:1,moth:2,turtle:1,ghost:3}},
+      {e:"🤩", t:"오케이! 해냅시다! (진심으로 도전 의욕이 생김)", s:{ant:2,moth:3,turtle:0,ghost:0}},
+      {e:"😮‍💨", t:"한숨 한번 쉬고 어떻게든 한다", s:{ant:3,moth:1,turtle:2,ghost:0}},
+      {e:"🫥", t:"이미 감각이 없어서 그냥 로봇처럼 한다", s:{ant:0,moth:0,turtle:0,ghost:3}},
+    ]
+  },
+  {
+    text: "지금 내 몸/마음 상태를 가장 잘 나타내는 것은?",
+    opts: [
+      {e:"⚡", t:"에너지 넘침. 일하면서 보람 느낌", s:{ant:3,moth:2,turtle:0,ghost:0}},
+      {e:"🔋", t:"배터리 30%. 간신히 버티는 중", s:{ant:1,moth:3,turtle:1,ghost:1}},
+      {e:"😴", t:"배터리 10%. 주말에 충전하면 겨우 버팀", s:{ant:0,moth:1,turtle:3,ghost:1}},
+      {e:"💀", t:"배터리 0%. 충전도 안 되는 느낌", s:{ant:0,moth:0,turtle:0,ghost:3}},
+    ]
+  },
+  {
+    text: "직장 생활에서 가장 공감되는 말은?",
+    opts: [
+      {e:"🐜", t:"'개미처럼 성실하게 일하면 언젠간 인정받는다'", s:{ant:3,moth:0,turtle:1,ghost:0}},
+      {e:"🔥", t:"'불처럼 타오르다 재가 되는 게 직장인 인생'", s:{ant:0,moth:3,turtle:0,ghost:1}},
+      {e:"🐢", t:"'느리더라도 꾸준히, 오래 살아남는 게 이기는 거'", s:{ant:1,moth:0,turtle:3,ghost:0}},
+      {e:"👻", t:"'나는 지금 출근은 하고 있지만 사실 거기 없다'", s:{ant:0,moth:0,turtle:0,ghost:3}},
+    ]
+  }
+];
+
+const TYPES = {
+  ant: {
+    name: '개미형 직장인',
+    emoji: '🐜',
+    color: '#ffd700',
+    gradient: 'linear-gradient(135deg,#a07800,#ffd700)',
+    burnout: 35,
+    desc: '성실하고 책임감이 강한 당신. 할 일은 반드시 해내지만 가끔 스스로를 너무 몰아붙이는 경향이 있어요. 번아웃보다는 과부하 주의! 충분한 휴식도 업무 능력의 일부임을 잊지 마세요.',
+    tags: ['#성실함', '#책임감', '#완벽주의', '#과부하주의'],
+    advice: '💡 오늘 퇴근 후엔 업무 알림 꺼두세요'
+  },
+  moth: {
+    name: '불나방형 직장인',
+    emoji: '🔥',
+    color: '#ff6b35',
+    gradient: 'linear-gradient(135deg,#aa3300,#ff6b35)',
+    burnout: 72,
+    desc: '열정적이고 몰입도가 높지만, 이미 번아웃 직전이에요. 타오르는 만큼 빨리 꺼질 수 있습니다. 지금 당장 에너지 관리가 필요해요. 불꽃이 꺼지기 전에 잠깐 멈추세요.',
+    tags: ['#열정과잉', '#번아웃위험', '#올인', '#휴식필요'],
+    advice: '🚨 당신에겐 강제 휴가가 필요합니다'
+  },
+  turtle: {
+    name: '거북이형 직장인',
+    emoji: '🐢',
+    color: '#4ecb71',
+    gradient: 'linear-gradient(135deg,#1a8a40,#4ecb71)',
+    burnout: 20,
+    desc: '느리지만 꾸준한 당신. 번아웃 위험은 낮지만 가끔 무기력함을 느낄 수 있어요. 속도보다 지속성이 강점입니다. 주변의 빠름에 흔들리지 말고 자신의 페이스를 유지하세요.',
+    tags: ['#꾸준함', '#저번아웃', '#자기페이스', '#무기력주의'],
+    advice: '✨ 작은 도전 하나 추가해보세요'
+  },
+  ghost: {
+    name: '유령형 직장인',
+    emoji: '👻',
+    color: '#a388ff',
+    gradient: 'linear-gradient(135deg,#5a3aaa,#a388ff)',
+    burnout: 91,
+    desc: '몸은 회사에 있지만 마음은 이미 사표를 낸 상태. 극도의 번아웃으로 감각이 무뎌진 상태예요. 이건 게으름이 아니라 신호입니다. 지금 당장 주변에 도움을 요청하거나 전문가 상담을 고려해보세요.',
+    tags: ['#극도번아웃', '#정서적소진', '#상담권장', '#퇴사충동'],
+    advice: '❤️ 당신의 감정은 정상적인 반응이에요'
+  }
+};
+
+let answers = new Array(5).fill(null);
+let current = 0;
+
+function startTest(){
+  document.getElementById('intro').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[current];
+  document.getElementById('q-num').textContent = 'QUESTION ' + String(current+1).padStart(2,'0');
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-count').textContent = current+1;
+  const pct = Math.round((current/5)*100);
+  document.getElementById('q-pct').textContent = pct+'%';
+  document.getElementById('prog').style.width = pct+'%';
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  q.opts.forEach((o,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn' + (answers[current]===i?' selected':'');
+    btn.innerHTML = `<span class="opt-emoji">${o.e}</span><span>${o.t}</span>`;
+    btn.onclick = ()=>selectOption(i);
+    opts.appendChild(btn);
+  });
+
+  document.getElementById('btn-prev').disabled = current===0;
+  document.getElementById('btn-next').disabled = answers[current]===null;
+  document.getElementById('btn-next').textContent = current===4 ? '결과 보기 🎯' : '다음 →';
+}
+
+function selectOption(i){
+  answers[current] = i;
+  document.querySelectorAll('.opt-btn').forEach((b,idx)=>{
+    b.classList.toggle('selected', idx===i);
+  });
+  document.getElementById('btn-next').disabled = false;
+}
+
+function next(){
+  if(answers[current]===null) return;
+  if(current===4){ showResult(); return; }
+  current++;
+  renderQuestion();
+}
+
+function prev(){
+  if(current===0) return;
+  current--;
+  renderQuestion();
+}
+
+function calcResult(){
+  const scores = {ant:0,moth:0,turtle:0,ghost:0};
+  answers.forEach((ans,qi)=>{
+    if(ans===null) return;
+    const s = QUESTIONS[qi].opts[ans].s;
+    Object.keys(s).forEach(k=> scores[k]+=s[k]);
+  });
+  return Object.keys(scores).reduce((a,b)=>scores[a]>scores[b]?a:b);
+}
+
+function showResult(){
+  document.getElementById('quiz').style.display='none';
+  const type = calcResult();
+  const t = TYPES[type];
+  const resultEl = document.getElementById('result');
+  resultEl.style.display='block';
+
+  resultEl.innerHTML = `
+    <div class="result-card" style="--type-color:${t.color}">
+      <span class="result-emoji">${t.emoji}</span>
+      <div class="result-type" style="color:${t.color}">번아웃 지수</div>
+      <div class="burnout-pct" style="color:${t.color}">${t.burnout}%</div>
+      <div class="burnout-sub">${getBurnoutLabel(t.burnout)}</div>
+      <div class="burnout-meter">
+        <div class="burnout-label"><span>안전</span><span>위험</span></div>
+        <div class="burnout-track">
+          <div class="burnout-fill" id="bfill" style="width:0%;background:${t.gradient}"></div>
+        </div>
+      </div>
+      <div class="result-name">${t.name}</div>
+      <div class="result-desc">${t.desc}<br><br><strong style="color:${t.color}">${t.advice}</strong></div>
+      <div class="result-tags">${t.tags.map(tg=>`<span class="tag">${tg}</span>`).join('')}</div>
+      <div class="share-section">
+        <button class="share-btn main" onclick="copyResult('${type}')">📋 결과 복사하기</button>
+        <button class="share-btn" onclick="location.reload()">↩ 다시하기</button>
+      </div>
+    </div>
+  `;
+
+  setTimeout(()=>{
+    const fill = document.getElementById('bfill');
+    if(fill) fill.style.cssText += `width:${t.burnout}%;transition:width 1s cubic-bezier(.4,0,.2,1) 0.3s`;
+  }, 100);
+}
+
+function getBurnoutLabel(pct){
+  if(pct<=30) return '😊 번아웃 걱정 없음';
+  if(pct<=50) return '🙂 약간 주의 필요';
+  if(pct<=70) return '😰 번아웃 경계선';
+  if(pct<=85) return '🚨 번아웃 위험 단계';
+  return '💀 즉시 휴식 필요';
+}
+
+function copyResult(type){
+  const t = TYPES[type];
+  const text = `[한국 직장인 번아웃 테스트]\n나의 유형: ${t.emoji} ${t.name}\n번아웃 지수: ${t.burnout}%\n\n${getBurnoutLabel(t.burnout)}\n\n나도 테스트해보기 👆`;
+  navigator.clipboard.writeText(text).then(()=>{
+    const el = document.getElementById('toast');
+    el.textContent = '📋 복사됐어요! 친구한테 공유해보세요';
+    el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'), 2500);
+  });
+}
+</script>
+</body>
+</html>
