@@ -5,907 +5,536 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🐜 개미 재테크 시뮬레이터</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080f08;--bg2:#0f1a0f;--bg3:#162416;
+  --border:#1e4018;--gold:#ffd700;--green:#4ecb71;--red:#ff5555;
+  --text:#c8e0b0;--dim:#6a9050;--orange:#ff9944;--blue:#55aaff;
+}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* TUTORIAL OVERLAY */
+#tutorial{position:fixed;inset:0;background:#000d;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.tut-box{background:#0f2010;border:2px solid var(--gold);border-radius:20px;max-width:480px;width:100%;padding:32px;text-align:center;animation:popIn .4s ease}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.tut-box h2{color:var(--gold);font-size:1.6rem;margin-bottom:8px}
+.tut-box .tut-ant{font-size:3rem;margin:12px 0;animation:bounce 1s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.tut-steps{text-align:left;margin:16px 0;display:flex;flex-direction:column;gap:10px}
+.tut-step{background:#1a3020;border-radius:10px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start}
+.tut-step .icon{font-size:1.3rem;flex-shrink:0}
+.tut-step p{font-size:.88rem;color:var(--text);line-height:1.5}
+.tut-step strong{color:var(--gold)}
+.tut-btn{background:var(--gold);color:#000;border:none;border-radius:12px;padding:14px 32px;font-size:1.1rem;font-weight:900;cursor:pointer;margin-top:8px;width:100%;transition:.2s}
+.tut-btn:hover{background:#ffe44d;transform:translateY(-2px)}
 
-  :root {
-    --bg: #080f08;
-    --bg2: #0f1a0f;
-    --bg3: #162416;
-    --border: #1e4018;
-    --border-bright: #2d6020;
-    --gold: #ffd700;
-    --gold-dim: #c8a800;
-    --green: #4ecb71;
-    --red: #ff5555;
-    --text: #c8e0b0;
-    --text-dim: #6a9050;
-    --orange: #ff9944;
-    --glow: 0 0 20px #ffd70033;
-  }
+/* EVENT POPUP */
+#event-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:#0f2010;border:2px solid var(--gold);border-radius:20px;padding:28px 36px;z-index:500;text-align:center;min-width:280px;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+#event-popup.show{transform:translate(-50%,-50%) scale(1)}
+#event-icon{font-size:3rem;margin-bottom:8px}
+#event-title{font-size:1.2rem;color:var(--gold);font-weight:900;margin-bottom:6px}
+#event-desc{font-size:.9rem;color:var(--text);margin-bottom:16px;line-height:1.5}
+#event-effect{font-size:1.1rem;font-weight:700}
+.event-btn{background:#1e4018;border:1px solid var(--gold);color:var(--gold);border-radius:10px;padding:10px 28px;cursor:pointer;font-size:.95rem;transition:.2s}
+.event-btn:hover{background:#2d6020}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans KR', 'Segoe UI', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 16px 40px;
-    background-image:
-      radial-gradient(ellipse at 20% 0%, #0f2a0f88 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 100%, #1a3a0a44 0%, transparent 50%);
-  }
+/* TOAST */
+#toast-container{position:fixed;top:20px;right:20px;z-index:900;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:#0f2010;border:1px solid;border-radius:12px;padding:10px 18px;font-size:.88rem;font-weight:700;opacity:0;transform:translateX(60px);transition:.3s;max-width:260px}
+.toast.show{opacity:1;transform:translateX(0)}
+.toast.profit{border-color:var(--green);color:var(--green)}
+.toast.loss{border-color:var(--red);color:var(--red)}
+.toast.info{border-color:var(--gold);color:var(--gold)}
+.toast.event{border-color:var(--orange);color:var(--orange)}
 
-  /* ── HEADER ── */
-  .header {
-    text-align: center;
-    margin-bottom: 24px;
-  }
-  .header h1 {
-    font-size: 2.2rem;
-    font-weight: 900;
-    color: var(--gold);
-    text-shadow: 0 0 30px #ffd70066, 0 2px 4px #000;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
-  }
-  .header .sub {
-    color: var(--text-dim);
-    font-size: 0.82rem;
-    margin-top: 4px;
-    letter-spacing: 0.5px;
-  }
-  .header .season-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, #1e4018, #2d6020);
-    border: 1px solid var(--border-bright);
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.78rem;
-    color: var(--gold);
-    margin-top: 8px;
-    box-shadow: 0 0 10px #ffd70022;
-  }
+/* FLOATING NUMBER */
+.float-num{position:fixed;font-size:1.2rem;font-weight:900;pointer-events:none;z-index:800;animation:floatUp 1.2s ease forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-80px)}}
 
-  /* ── CONTAINER ── */
-  .container { width: 100%; max-width: 920px; display: flex; flex-direction: column; gap: 14px; }
-  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+/* MAIN LAYOUT */
+.header{text-align:center;padding:28px 16px 16px}
+.header h1{font-size:2rem;color:var(--gold);text-shadow:0 0 30px #ffd70066;font-weight:900}
+.header .sub{color:var(--dim);font-size:.82rem;margin-top:4px}
+.container{max-width:940px;margin:0 auto;padding:0 16px 60px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.card{background:#0f1a0f;border:1px solid var(--border);border-radius:16px;padding:18px 20px;flex:1;min-width:220px;position:relative;overflow:hidden}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#2d6020,transparent)}
+.card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:14px}
 
-  /* ── CARD ── */
-  .card {
-    background: linear-gradient(145deg, #122012, #0f1a0f);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px 20px;
-    flex: 1;
-    min-width: 240px;
-    box-shadow: 0 4px 20px #00000060, inset 0 1px 0 #1e4018;
-    position: relative;
-    overflow: hidden;
-  }
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #2d6020, transparent);
-  }
-  .card h2 {
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+/* HUD BAR */
+.hud{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
+.hud-item{background:#0f1a0f;border:1px solid var(--border);border-radius:12px;padding:10px 18px;text-align:center;flex:1;min-width:110px}
+.hud-item .hval{font-size:1.3rem;font-weight:900;color:var(--gold)}
+.hud-item .hlbl{font-size:.72rem;color:var(--dim);margin-top:2px}
 
-  /* ── COLONY ── */
-  #colony-display {
-    font-size: 1.6rem;
-    letter-spacing: 1px;
-    margin: 6px 0 10px;
-    min-height: 48px;
-    word-break: break-all;
-    line-height: 1.4;
-    text-align: center;
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 8px;
-    border: 1px solid var(--border);
-  }
-  .colony-ants { animation: antWiggle 2s infinite; display: inline-block; }
-  @keyframes antWiggle {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-2px); }
-  }
+/* PROGRESS */
+.pbar-wrap{margin:8px 0}
+.pbar-lbl{display:flex;justify-content:space-between;font-size:.75rem;color:var(--dim);margin-bottom:4px}
+.pbar{background:#0a120a;border-radius:20px;height:14px;overflow:hidden;border:1px solid var(--border)}
+.pfill{height:100%;border-radius:20px;transition:width .5s;background:linear-gradient(90deg,#1e5a1e,var(--gold))}
 
-  .turn-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.78rem;
-    color: var(--text-dim);
-    margin-top: 6px;
-  }
-  .turn-row span { color: var(--gold); font-weight: 700; }
+/* COLONY */
+#colony-vis{font-size:1.6rem;line-height:1.4;min-height:48px;word-break:break-all;text-align:center;padding:8px 0;transition:all .3s}
+.colony-mood{text-align:center;font-size:.82rem;margin-top:6px}
 
-  /* ── PROGRESS BAR ── */
-  .progress-wrap { margin: 10px 0 4px; }
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.74rem;
-    color: var(--text-dim);
-    margin-bottom: 5px;
-  }
-  .progress-label strong { color: var(--text); }
-  .progress-track {
-    background: var(--bg);
-    border-radius: 20px;
-    height: 10px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .progress-fill {
-    height: 100%;
-    border-radius: 20px;
-    background: linear-gradient(90deg, #1e6020, #ffd700);
-    transition: width 0.5s cubic-bezier(.4,0,.2,1);
-    position: relative;
-  }
-  .progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 1px; right: 2px; bottom: 1px;
-    width: 6px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 20px;
-    filter: blur(2px);
-  }
+/* INVESTMENT CARDS */
+.inv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.inv-card{background:#0a120a;border:2px solid var(--border);border-radius:14px;padding:14px 12px;cursor:pointer;transition:all .2s;position:relative;text-align:center}
+.inv-card:hover{border-color:var(--gold);background:#142014;transform:translateY(-3px);box-shadow:0 8px 20px #00000060}
+.inv-card.selected{border-color:var(--gold);background:#1a2e10}
+.inv-card .inv-emoji{font-size:1.6rem;margin-bottom:4px}
+.inv-card .inv-name{font-size:.9rem;font-weight:700;color:var(--gold)}
+.inv-card .inv-rate{font-size:.75rem;color:var(--text);margin:3px 0}
+.inv-card .inv-risk{font-size:.72rem;color:var(--dim)}
+.inv-card .inv-tip{font-size:.68rem;color:var(--dim);margin-top:4px;font-style:italic}
 
-  /* ── STATS ── */
-  .stat-grid { display: flex; flex-direction: column; gap: 7px; }
-  .stat {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.88rem;
-    padding: 5px 8px;
-    border-radius: 8px;
-    background: #0a130a;
-    border: 1px solid #111e11;
-  }
-  .stat .label { color: var(--text-dim); font-size: 0.8rem; }
-  .stat .value { color: var(--gold); font-weight: 700; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
-  .stat .value.green { color: var(--green); }
-  .stat .value.red { color: var(--red); }
-  .stat.highlight { border-color: var(--border-bright); background: #0f1f0f; }
-  .stat.highlight .value { color: #fff; font-size: 1rem; }
-  .stat.highlight .label { color: var(--text); }
+/* AMOUNT INPUT */
+.amount-wrap{margin:14px 0 0}
+.amount-wrap label{font-size:.8rem;color:var(--dim);display:block;margin-bottom:6px}
+input[type=range]{width:100%;accent-color:var(--gold);cursor:pointer;height:6px}
+.amount-display{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.amount-display .aval{font-size:1.1rem;font-weight:900;color:var(--gold)}
+.amount-display .amax{font-size:.75rem;color:var(--dim)}
+.invest-go{width:100%;margin-top:12px;background:linear-gradient(135deg,#1e5a1e,#2d8020);border:1px solid var(--green);border-radius:12px;padding:13px;color:var(--green);font-size:1rem;font-weight:700;cursor:pointer;transition:.2s}
+.invest-go:hover{background:linear-gradient(135deg,#2d8020,#3d9030);transform:translateY(-2px)}
 
-  /* ── INVESTMENT GRID ── */
-  .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .inv-btn {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 8px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.18s cubic-bezier(.4,0,.2,1);
-    color: var(--text);
-    position: relative;
-    overflow: hidden;
-  }
-  .inv-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, transparent, #ffffff08);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .inv-btn:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 6px 20px #00000060, 0 0 12px #ffd70022; }
-  .inv-btn:hover::before { opacity: 1; }
-  .inv-btn:active { transform: translateY(-1px); }
-  .inv-btn.selected { border-color: var(--gold); box-shadow: 0 0 14px #ffd70033; background: #131f13; }
-  .inv-btn .inv-icon { font-size: 1.5rem; margin-bottom: 4px; }
-  .inv-btn .inv-name { font-size: 0.8rem; font-weight: 700; color: var(--gold); }
-  .inv-btn .inv-rate { font-size: 0.72rem; color: var(--text-dim); margin: 3px 0 2px; }
-  .inv-btn .inv-risk { font-size: 0.7rem; }
+/* ACTIONS */
+.act-grid{display:grid;gap:10px}
+.act-btn{background:#0a120a;border:1px solid var(--border);border-radius:12px;padding:13px 16px;cursor:pointer;transition:all .2s;text-align:left;color:var(--text)}
+.act-btn:hover{border-color:var(--gold);background:#142014}
+.act-btn .act-top{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.92rem;margin-bottom:2px}
+.act-btn .act-desc{font-size:.72rem;color:var(--dim);padding-left:28px}
+.next-turn-btn{background:linear-gradient(135deg,#1a4010,#2a6020);border:2px solid var(--green);border-radius:14px;padding:16px;cursor:pointer;color:var(--green);font-size:1.1rem;font-weight:900;width:100%;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.next-turn-btn:hover{background:linear-gradient(135deg,#2a6020,#3a8030);transform:translateY(-2px);box-shadow:0 6px 20px #00ff0020}
 
-  /* ── SLIDER ── */
-  .slider-section {
-    margin-top: 14px;
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-  }
-  .slider-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .slider-top label { font-size: 0.8rem; color: var(--text-dim); }
-  .slider-top .slider-amount { font-size: 1rem; font-weight: 700; color: var(--gold); }
-  input[type=range] {
-    width: 100%;
-    height: 6px;
-    accent-color: var(--gold);
-    cursor: pointer;
-    border-radius: 10px;
-  }
-  .invest-confirm-btn {
-    width: 100%;
-    margin-top: 10px;
-    background: linear-gradient(135deg, #1e5018, #2d7020);
-    border: 1px solid var(--border-bright);
-    border-radius: 10px;
-    padding: 10px;
-    color: var(--gold);
-    font-size: 0.88rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s;
-    font-family: inherit;
-  }
-  .invest-confirm-btn:hover { background: linear-gradient(135deg, #2a6020, #3a8030); box-shadow: 0 0 14px #ffd70022; }
-  .invest-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* LOG */
+#log{height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.log-entry{font-size:.78rem;padding:5px 8px;border-radius:6px;border-left:3px solid}
+.log-entry.profit{background:#0a2010;border-color:var(--green);color:var(--green)}
+.log-entry.loss{background:#200a0a;border-color:var(--red);color:var(--red)}
+.log-entry.info{background:#1a1a08;border-color:var(--gold);color:var(--gold)}
+.log-entry.event{background:#1a0f00;border-color:var(--orange);color:var(--orange)}
 
-  /* ── ACTION BUTTONS ── */
-  .action-grid { display: flex; flex-direction: column; gap: 8px; }
-  .btn {
-    background: #132013;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 0.84rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s;
-    text-align: left;
-    font-family: inherit;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .btn:hover { border-color: var(--border-bright); background: #1a2a1a; transform: translateX(2px); }
-  .btn.primary {
-    background: linear-gradient(135deg, #1e5018, #2d7020);
-    border-color: var(--border-bright);
-    color: var(--gold);
-    font-size: 0.92rem;
-    justify-content: center;
-    box-shadow: 0 2px 10px #00000040;
-  }
-  .btn.primary:hover { box-shadow: 0 0 16px #ffd70033; transform: translateY(-1px); }
-  .btn.danger { border-color: #3a1010; color: #ff8888; }
-  .btn.danger:hover { background: #1f1010; border-color: #6a2020; }
+/* ACHIEVEMENTS */
+.ach-grid{display:flex;flex-wrap:wrap;gap:8px}
+.ach{background:#0a120a;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.78rem;color:var(--dim);transition:.3s;display:flex;align-items:center;gap:6px}
+.ach.unlocked{border-color:var(--gold);color:var(--gold);background:#1a1a08;animation:achPop .4s ease}
+@keyframes achPop{0%{transform:scale(1.3)}100%{transform:scale(1)}}
 
-  /* ── NEXT TURN BIG BTN ── */
-  .next-turn-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #1a4a18, #28600a, #1a4a18);
-    border: 1px solid #3a8020;
-    border-radius: 14px;
-    padding: 16px;
-    color: var(--gold);
-    font-size: 1rem;
-    font-weight: 900;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 20px #00000060, inset 0 1px 0 #4a9030;
-    position: relative;
-    overflow: hidden;
-  }
-  .next-turn-btn::after {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .next-turn-btn:hover { box-shadow: 0 6px 24px #00000080, 0 0 20px #ffd70033; transform: translateY(-2px); }
-  .next-turn-btn:hover::after { opacity: 1; }
-  .next-turn-btn:active { transform: translateY(0); }
+/* TIPS TICKER */
+.tips-bar{background:#0a120a;border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:.8rem;color:var(--dim);overflow:hidden;white-space:nowrap}
+.tips-inner{display:inline-block;animation:scroll 22s linear infinite}
+@keyframes scroll{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}
 
-  /* ── LOG ── */
-  #log {
-    height: 150px;
-    overflow-y: auto;
-    font-size: 0.78rem;
-    line-height: 1.7;
-    color: var(--text-dim);
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-  .log-entry { padding: 2px 0; border-bottom: 1px solid #0f180f; display: flex; gap: 6px; }
-  .log-entry .log-q { color: #3a5a3a; font-size: 0.72rem; white-space: nowrap; padding-top: 1px; }
-  .log-entry.profit { color: var(--green); }
-  .log-entry.loss { color: var(--red); }
-  .log-entry.info { color: #88aaff; }
+/* GAMEOVER */
+#gameover{display:none;position:fixed;inset:0;background:#000c;z-index:800;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:20px}
+.go-box{background:#0f2010;border:2px solid var(--gold);border-radius:20px;padding:36px;text-align:center;max-width:400px;animation:popIn .4s ease}
+.go-box h2{font-size:2.2rem;color:var(--gold);margin-bottom:8px}
+.go-box p{color:var(--text);font-size:.95rem;line-height:1.6;margin-bottom:16px}
+.go-stats{background:#0a120a;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left}
+.go-stat{display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0;border-bottom:1px solid var(--border)}
+.go-stat:last-child{border:none}
+.go-btn{background:var(--gold);color:#000;border:none;border-radius:12px;padding:14px 40px;font-size:1rem;font-weight:900;cursor:pointer;width:100%}
+.go-btn:hover{background:#ffe44d}
 
-  /* ── WEALTH CHART ── */
-  #wealth-chart {
-    width: 100%;
-    height: 70px;
-    background: var(--bg);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    display: block;
-    margin-top: 6px;
-  }
-
-  /* ── INFLATION TICKER ── */
-  .ticker-bar {
-    display: flex;
-    gap: 20px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 14px;
-    font-size: 0.78rem;
-    flex-wrap: wrap;
-  }
-  .ticker-item { display: flex; align-items: center; gap: 6px; color: var(--text-dim); }
-  .ticker-item .tv { color: var(--gold); font-weight: 700; }
-  .ticker-item .tv.up { color: var(--green); }
-  .ticker-item .tv.down { color: var(--red); }
-  .ticker-item .tv.warn { color: var(--orange); }
-
-  /* ── GAME OVER ── */
-  #gameover {
-    display: none;
-    position: fixed; inset: 0;
-    background: #000000dd;
-    backdrop-filter: blur(8px);
-    justify-content: center; align-items: center;
-    z-index: 99;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .gameover-box {
-    background: linear-gradient(145deg, #122012, #0f1a0f);
-    border: 1px solid var(--border-bright);
-    border-radius: 24px;
-    padding: 40px 48px;
-    text-align: center;
-    box-shadow: 0 0 60px #ffd70022, 0 20px 60px #00000080;
-    max-width: 400px;
-  }
-  .gameover-box h2 { font-size: 2.8rem; color: var(--gold); text-shadow: 0 0 40px #ffd700; margin-bottom: 8px; }
-  .gameover-box p { color: var(--text); font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; }
-  .gameover-box .btn.primary { width: 100%; justify-content: center; }
-
-  /* ── TOAST ── */
-  #toast {
-    position: fixed;
-    bottom: 30px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: #1a3a1a;
-    border: 1px solid var(--border-bright);
-    border-radius: 30px;
-    padding: 10px 24px;
-    font-size: 0.85rem;
-    color: var(--gold);
-    font-weight: 700;
-    box-shadow: 0 8px 30px #00000080;
-    transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
-    opacity: 0;
-    z-index: 200;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-  /* ── PULSE ANIMATION ── */
-  @keyframes pulse {
-    0%,100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-  .pulse { animation: pulse 1.5s infinite; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .header h1 { font-size: 1.6rem; }
-    .inv-grid { grid-template-columns: 1fr 1fr; }
-  }
+@media(max-width:600px){.inv-grid{grid-template-columns:1fr 1fr}.hud-item{min-width:80px}}
 </style>
 </head>
 <body>
 
+<!-- TUTORIAL -->
+<div id="tutorial">
+  <div class="tut-box">
+    <h2>🐜 개미 재테크 시뮬레이터</h2>
+    <div class="tut-ant">🐜💰</div>
+    <p style="font-size:.9rem;color:var(--dim);margin-bottom:16px">개미 콜로니를 키우며 <strong style="color:var(--gold)">순자산 10,000</strong>을 달성하세요!</p>
+    <div class="tut-steps">
+      <div class="tut-step">
+        <span class="icon">⏭️</span>
+        <p><strong>다음 분기</strong> 버튼으로 시간을 넘기세요. 분기마다 수입이 들어오고 인플레이션이 발생해요.</p>
+      </div>
+      <div class="tut-step">
+        <span class="icon">🐜</span>
+        <p><strong>일개미 고용</strong>으로 콜로니를 키우세요. 개미가 많을수록 분기 수입이 늘어요!</p>
+      </div>
+      <div class="tut-step">
+        <span class="icon">📈</span>
+        <p>남는 돈은 <strong>투자</strong>하세요. 저축은 안전하지만 느리고, 코인은 위험하지만 대박날 수 있어요.</p>
+      </div>
+      <div class="tut-step">
+        <span class="icon">🌡️</span>
+        <p>가만히 있으면 <strong>인플레이션</strong>으로 돈 가치가 떨어져요. 무조건 굴려야 해요!</p>
+      </div>
+    </div>
+    <button class="tut-btn" onclick="startGame()">🚀 게임 시작!</button>
+  </div>
+</div>
+
+<!-- EVENT POPUP -->
+<div id="event-popup">
+  <div id="event-icon">⚡</div>
+  <div id="event-title">이벤트 발생!</div>
+  <div id="event-desc">설명</div>
+  <div id="event-effect" class="profit">효과</div>
+  <br>
+  <button class="event-btn" onclick="closeEvent()">확인!</button>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- HEADER -->
 <div class="header">
   <h1>🐜 개미 재테크 시뮬레이터</h1>
-  <div class="sub">ant money_bot × AntIdea_bot | 개미 콜로니로 부를 쌓아라!</div>
-  <div class="season-badge" id="season-badge">📅 1분기 진행 중</div>
+  <div class="sub">순자산 10,000을 달성하라! | ant money_bot × AntIdea_bot</div>
 </div>
 
 <div class="container">
 
-  <!-- TICKER -->
-  <div class="ticker-bar">
-    <div class="ticker-item">💰 현금 <span class="tv" id="tk-cash">1,000</span></div>
-    <div class="ticker-item">📈 투자 <span class="tv up" id="tk-inv">0</span></div>
-    <div class="ticker-item">🏦 저축 <span class="tv" id="tk-sav">0</span></div>
-    <div class="ticker-item">🌡️ 인플레이션 <span class="tv warn" id="tk-inf">3.0%</span></div>
-    <div class="ticker-item">🐜 개미 <span class="tv" id="tk-ants">1마리</span></div>
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-item">
+      <div class="hval" id="hud-cash">1,000</div>
+      <div class="hlbl">💵 보유 자원</div>
+    </div>
+    <div class="hud-item">
+      <div class="hval" id="hud-net">1,000</div>
+      <div class="hlbl">💎 순자산</div>
+    </div>
+    <div class="hud-item">
+      <div class="hval" id="hud-ants">1</div>
+      <div class="hlbl">🐜 개미 수</div>
+    </div>
+    <div class="hud-item">
+      <div class="hval" id="hud-turn">1</div>
+      <div class="hlbl">📅 분기</div>
+    </div>
+    <div class="hud-item">
+      <div class="hval" id="hud-inflation" style="color:var(--orange)">3.0%</div>
+      <div class="hlbl">🌡️ 인플레</div>
+    </div>
   </div>
 
-  <!-- ROW 1 -->
+  <!-- GOAL PROGRESS -->
+  <div class="pbar-wrap" style="padding:0 4px">
+    <div class="pbar-lbl"><span>🏆 목표까지</span><span id="goal-pct">10%</span></div>
+    <div class="pbar"><div class="pfill" id="goal-bar" style="width:10%"></div></div>
+  </div>
+
   <div class="row">
-    <!-- Colony Card -->
-    <div class="card" style="flex:1.3">
+    <!-- COLONY -->
+    <div class="card" style="flex:1.2">
       <h2>🏠 내 콜로니</h2>
-      <div id="colony-display"><span class="colony-ants">🐜</span></div>
-      <div class="progress-wrap">
-        <div class="progress-label">
-          <span>콜로니 규모</span>
-          <strong id="colony-size-label">1 / 100마리</strong>
-        </div>
-        <div class="progress-track"><div class="progress-fill" id="colony-bar" style="width:1%"></div></div>
+      <div id="colony-vis">🐜</div>
+      <div class="colony-mood" id="colony-mood">조용한 콜로니...</div>
+      <div class="pbar-wrap" style="margin-top:10px">
+        <div class="pbar-lbl"><span>콜로니 규모</span><span id="colony-lbl">1마리</span></div>
+        <div class="pbar"><div class="pfill" id="colony-bar" style="width:1%"></div></div>
       </div>
-      <div class="turn-row">
-        <span>📅 <span id="turn-display">1</span>분기</span>
-        <span>실질 구매력: <span id="stat-real">1,000</span></span>
+      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#0a120a;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:.72rem;color:var(--dim)">📊 투자 자산</div>
+          <div style="font-weight:700;color:var(--green)" id="stat-invested">0</div>
+        </div>
+        <div style="background:#0a120a;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:.72rem;color:var(--dim)">🏦 저축</div>
+          <div style="font-weight:700;color:var(--blue)" id="stat-savings">0</div>
+        </div>
       </div>
     </div>
 
-    <!-- Stats Card -->
-    <div class="card" style="flex:1">
-      <h2>💼 재정 현황</h2>
-      <div class="stat-grid">
-        <div class="stat"><span class="label">보유 현금</span><span class="value" id="stat-cash">1,000</span></div>
-        <div class="stat"><span class="label">투자 자산</span><span class="value green" id="stat-invested">0</span></div>
-        <div class="stat"><span class="label">저축 (복리 2%)</span><span class="value" id="stat-savings">0</span></div>
-        <div class="stat highlight"><span class="label">순자산</span><span class="value" id="stat-net">1,000</span></div>
-      </div>
-      <div class="progress-wrap" style="margin-top:12px">
-        <div class="progress-label">
-          <span>목표 달성률</span>
-          <strong id="goal-pct">10%</strong>
-        </div>
-        <div class="progress-track"><div class="progress-fill" id="goal-bar" style="width:10%"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ROW 2 -->
-  <div class="row">
-    <!-- Investment Card -->
-    <div class="card" style="flex:1.6">
-      <h2>📈 투자 선택</h2>
-      <div class="inv-grid">
-        <button class="inv-btn" id="btn-savings" onclick="selectInvest('savings')">
-          <div class="inv-icon">💵</div>
+    <!-- INVESTMENT -->
+    <div class="card" style="flex:1.8">
+      <h2>📈 투자 선택 — 고르고 금액 조절 후 투자하기!</h2>
+      <div class="inv-grid" id="inv-grid">
+        <div class="inv-card" onclick="selectInv('savings',this)">
+          <div class="inv-emoji">💵</div>
           <div class="inv-name">저축</div>
-          <div class="inv-rate">연 2% 확정</div>
-          <div class="inv-risk">🟢 무위험</div>
-        </button>
-        <button class="inv-btn" id="btn-bond" onclick="selectInvest('bond')">
-          <div class="inv-icon">📜</div>
+          <div class="inv-rate">연 2% 확정이자</div>
+          <div class="inv-risk">🟢 리스크 없음</div>
+          <div class="inv-tip">안전하지만 인플레이션 못 이겨요</div>
+        </div>
+        <div class="inv-card" onclick="selectInv('bond',this)">
+          <div class="inv-emoji">📜</div>
           <div class="inv-name">채권</div>
-          <div class="inv-rate">연 4~6%</div>
-          <div class="inv-risk">🟡 낮은 위험</div>
-        </button>
-        <button class="inv-btn" id="btn-stock" onclick="selectInvest('stock')">
-          <div class="inv-icon">📊</div>
+          <div class="inv-rate">연 4~6% 이자</div>
+          <div class="inv-risk">🟡 낮은 리스크</div>
+          <div class="inv-tip">꾸준히 안정적으로 벌어요</div>
+        </div>
+        <div class="inv-card" onclick="selectInv('stock',this)">
+          <div class="inv-emoji">📊</div>
           <div class="inv-name">주식</div>
           <div class="inv-rate">-20% ~ +30%</div>
-          <div class="inv-risk">🟠 중간 위험</div>
-        </button>
-        <button class="inv-btn" id="btn-crypto" onclick="selectInvest('crypto')">
-          <div class="inv-icon">🪙</div>
+          <div class="inv-risk">🟠 중간 리스크</div>
+          <div class="inv-tip">대박 아니면 쪽박!</div>
+        </div>
+        <div class="inv-card" onclick="selectInv('crypto',this)">
+          <div class="inv-emoji">🪙</div>
           <div class="inv-name">코인</div>
           <div class="inv-rate">-50% ~ +100%</div>
-          <div class="inv-risk">🔴 고위험</div>
-        </button>
-      </div>
-      <div class="slider-section">
-        <div class="slider-top">
-          <label>투자 금액</label>
-          <span class="slider-amount" id="inv-amount-label">500</span>
+          <div class="inv-risk">🔴 극한 리스크</div>
+          <div class="inv-tip">도박... 하지만 짜릿해요</div>
         </div>
-        <input type="range" id="inv-amount" min="10" max="1000" step="10" value="500" oninput="updateSlider()">
-        <button class="invest-confirm-btn" id="invest-btn" onclick="confirmInvest()" disabled>투자 유형을 선택하세요</button>
       </div>
-    </div>
-
-    <!-- Actions Card -->
-    <div class="card" style="flex:1">
-      <h2>⚡ 행동</h2>
-      <div class="action-grid">
-        <button class="btn" onclick="withdrawSavings()">🏦 저축 인출</button>
-        <button class="btn" onclick="withdrawInvested()">💸 투자 회수</button>
-        <button class="btn" onclick="buyAnts()">🐜 일개미 고용 <small style="color:var(--gold)">(-50)</small></button>
-        <button class="btn danger" onclick="resetGame()">🔄 처음부터</button>
+      <div class="amount-wrap">
+        <label>투자 금액</label>
+        <input type="range" id="inv-range" min="10" max="1000" step="10" value="200" oninput="syncSlider()">
+        <div class="amount-display">
+          <span class="aval" id="inv-val">200</span>
+          <span class="amax" id="inv-max">보유: 1,000</span>
+        </div>
       </div>
-      <div style="margin-top: 12px; font-size:0.72rem; color:var(--orange); text-align:center; padding: 6px; background:var(--bg); border-radius:8px; border:1px solid #3a2010;">
-        ⚠️ 인플레이션으로 현금 가치 하락 중
-      </div>
+      <button class="invest-go" onclick="doInvest()">💰 투자하기</button>
     </div>
   </div>
 
-  <!-- NEXT TURN -->
-  <button class="next-turn-btn" onclick="nextTurn()">
-    ⏭️ 다음 분기로 넘어가기
-  </button>
-
-  <!-- CHART + LOG -->
   <div class="row">
+    <!-- ACTIONS -->
     <div class="card" style="flex:1">
-      <h2>📊 자산 추이</h2>
-      <canvas id="wealth-chart"></canvas>
+      <h2>⚡ 행동</h2>
+      <div class="act-grid">
+        <button class="next-turn-btn" onclick="nextTurn()">⏭️ 다음 분기로!</button>
+        <button class="act-btn" onclick="buyAnts()">
+          <div class="act-top">🐜 일개미 고용 <span style="color:var(--dim);font-size:.8rem;margin-left:auto">-50</span></div>
+          <div class="act-desc">분기 수입 +10 증가</div>
+        </button>
+        <button class="act-btn" onclick="withdrawSavings()">
+          <div class="act-top">🏦 저축 인출</div>
+          <div class="act-desc">저축 잔액을 현금으로 전환</div>
+        </button>
+        <button class="act-btn" onclick="withdrawInvested()">
+          <div class="act-top">💸 투자 회수</div>
+          <div class="act-desc">투자 자산을 현금으로 전환</div>
+        </button>
+        <button class="act-btn" style="border-color:#5a1b1b;color:#ff9999" onclick="resetGame()">
+          <div class="act-top">🔄 처음부터</div>
+        </button>
+      </div>
     </div>
+
+    <!-- LOG -->
     <div class="card" style="flex:1.5">
       <h2>📋 거래 로그</h2>
       <div id="log"></div>
     </div>
   </div>
 
+  <!-- ACHIEVEMENTS -->
+  <div class="card">
+    <h2>🏅 업적</h2>
+    <div class="ach-grid">
+      <div class="ach" id="ach-first-invest">📈 첫 투자</div>
+      <div class="ach" id="ach-10ants">🐜 개미 10마리</div>
+      <div class="ach" id="ach-2000">💰 자산 2,000</div>
+      <div class="ach" id="ach-5000">💎 자산 5,000</div>
+      <div class="ach" id="ach-crypto-win">🪙 코인 대박</div>
+      <div class="ach" id="ach-survived">🛡️ 10분기 생존</div>
+    </div>
+  </div>
+
+  <!-- TIPS -->
+  <div class="tips-bar">
+    <div class="tips-inner">💡 팁: 개미를 먼저 여러마리 고용하면 수입이 빨라져요! &nbsp;&nbsp;&nbsp; 🌡️ 인플레이션이 높아지면 저축보다 주식이 유리해요! &nbsp;&nbsp;&nbsp; 🪙 코인은 소액만 투자하는 게 정신건강에 좋아요! &nbsp;&nbsp;&nbsp; 📜 채권은 장기 보유할수록 복리 효과가 커요! &nbsp;&nbsp;&nbsp; 🐜 일개미는 많을수록 좋아요. 초반에 최대한 고용하세요!</div>
+  </div>
+
 </div>
 
-<!-- GAME OVER -->
-<div id="gameover">
-  <div class="gameover-box">
-    <h2 id="gameover-title">🏆 승리!</h2>
-    <p id="gameover-msg"></p>
-    <button class="btn primary" onclick="resetGame()">🔄 다시 시작</button>
+<!-- GAMEOVER -->
+<div id="gameover" style="display:none;position:fixed;inset:0;background:#000c;z-index:800;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:20px">
+  <div class="go-box">
+    <h2 id="go-title">🏆 승리!</h2>
+    <p id="go-msg"></p>
+    <div class="go-stats" id="go-stats"></div>
+    <button class="go-btn" onclick="resetGame()">다시 도전!</button>
   </div>
 </div>
 
-<!-- TOAST -->
-<div id="toast"></div>
-
 <script>
-// ══════════════════════════════════════
-// FINANCIAL LOGIC ENGINE — by ant money_bot
-// ══════════════════════════════════════
-
-const INVESTMENT_PROFILES = {
-  savings: {
-    name: '저축',
-    returns: () => 0.02 / 4,
-    risk: 0,
-  },
-  bond: {
-    name: '채권',
-    returns: () => (randBetween(4, 6) / 100) / 4,
-    risk: 0.05,
-  },
-  stock: {
-    name: '주식',
-    returns: () => randBetween(-20, 30) / 100 / 4,
-    risk: 0.15,
-  },
-  crypto: {
-    name: '코인',
-    returns: () => randBetween(-50, 100) / 100 / 4,
-    risk: 0.25,
-  },
+const INV = {
+  savings: { name:'저축', emoji:'💵', qRate:()=>0.005, riskChance:0 },
+  bond:    { name:'채권', emoji:'📜', qRate:()=>rand(1,1.5)/100, riskChance:0.03 },
+  stock:   { name:'주식', emoji:'📊', qRate:()=>rand(-5,7.5)/100, riskChance:0.1 },
+  crypto:  { name:'코인', emoji:'🪙', qRate:()=>rand(-12.5,25)/100, riskChance:0.2 },
 };
 
-let state = {};
-let wealthHistory = [];
-let selectedInvestType = null;
+const EVENTS = [
+  { id:'gold_rush', icon:'⛏️', title:'황금 개미굴 발견!', desc:'콜로니 근처에서 자원이 쏟아졌어요!',
+    effect: s=>{ const g=rand(100,300)|0; s.cash+=g; return {cls:'profit',txt:`+${g} 자원 획득!`}; }},
+  { id:'drought', icon:'🏜️', title:'극심한 가뭄!', desc:'자원 수급이 끊겼어요.',
+    effect: s=>{ const l=Math.min(s.cash*.15|0,150); s.cash-=l; return {cls:'loss',txt:`-${l} 자원 손실`}; }},
+  { id:'market_crash', icon:'📉', title:'시장 대폭락!', desc:'글로벌 금융위기... 투자 자산이 줄었어요.',
+    effect: s=>{ if(s.invested>0){const l=s.invested*.3|0; s.invested-=l; return {cls:'loss',txt:`투자 -${l}`};} return {cls:'info',txt:'피해 없음!'}; }},
+  { id:'boom', icon:'🚀', title:'경제 대호황!', desc:'모든 투자 수익률이 급등!',
+    effect: s=>{ if(s.invested>0){const g=s.invested*.2|0; s.invested+=g; return {cls:'profit',txt:`투자 +${g}!`};} return {cls:'info',txt:'투자 자산 없어요...'}; }},
+  { id:'ant_revolt', icon:'😤', title:'개미 파업!', desc:'일개미들이 파업 선언! 다음 분기 수입 반토막.',
+    effect: s=>{ s.strikeNext=true; return {cls:'loss',txt:'다음 분기 수입 50% 감소!'}; }},
+  { id:'colony_growth', icon:'🎉', title:'콜로니 번성!', desc:'개미들이 자발적으로 번식했어요!',
+    effect: s=>{ const b=Math.max(1,s.ants*.1|0); s.ants+=b; return {cls:'profit',txt:`개미 +${b}마리!`}; }},
+  { id:'inflation_spike', icon:'🌡️', title:'인플레이션 급등!', desc:'중앙은행이 금리를 올렸어요!',
+    effect: s=>{ s.inflation=Math.min(.12,s.inflation+.02); return {cls:'loss',txt:`인플레 +2%p → ${(s.inflation*100).toFixed(1)}%`}; }},
+  { id:'tax_rebate', icon:'🧾', title:'세금 환급!', desc:'정부가 개미 농가를 지원해요!',
+    effect: s=>{ const g=rand(50,200)|0; s.cash+=g; return {cls:'profit',txt:`+${g} 환급!`}; }},
+];
 
-function initState() {
-  state = {
-    cash: 1000,
-    savings: 0,
-    invested: 0,
-    investType: null,
-    ants: 1,
-    turn: 1,
-    inflation: 0.03,
-    inflationFactor: 1,
-    basePurchasingPower: 1000,
-  };
-  wealthHistory = [1000];
-  selectedInvestType = null;
+let state, selectedInv=null, achievements={};
+function rand(a,b){ return Math.random()*(b-a)+a; }
+function fmt(n){ return Math.round(n).toLocaleString('ko-KR'); }
+
+function initState(){
+  state={ cash:1000, savings:0, invested:0, investType:null, ants:1, turn:1, inflation:.03, inflationFactor:1, strikeNext:false };
+  achievements={};
+  selectedInv=null;
+  document.querySelectorAll('.inv-card').forEach(c=>c.classList.remove('selected'));
 }
 
-function randBetween(min, max) {
-  return Math.random() * (max - min) + min;
+function startGame(){
+  document.getElementById('tutorial').style.display='none';
+  updateUI();
+  addLog('게임 시작! 목표: 순자산 10,000 달성 🏆','info');
 }
 
-function applySavingsInterest() {
-  const rate = 0.02 / 4;
-  const interest = Math.round(state.savings * rate);
-  state.savings += interest;
-  return interest;
+function selectInv(type,el){
+  selectedInv=type;
+  document.querySelectorAll('.inv-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
-function applyInflation() {
-  const qRate = state.inflation / 4;
-  state.inflationFactor *= (1 + qRate);
-  state.inflation = Math.max(0.01, Math.min(0.08,
-    state.inflation + randBetween(-0.00125, 0.00125)
-  ));
-}
-
-function realValue(nominal) {
-  return Math.round(nominal / state.inflationFactor);
-}
-
-function netWorth() {
-  return state.cash + state.savings + state.invested;
-}
-
-// ── UI: INVEST SELECT ──
-function selectInvest(type) {
-  selectedInvestType = type;
-  document.querySelectorAll('.inv-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('btn-' + type).classList.add('selected');
-  const btn = document.getElementById('invest-btn');
-  const names = {savings:'저축', bond:'채권', stock:'주식', crypto:'코인'};
-  btn.disabled = false;
-  btn.textContent = `✅ ${names[type]} 투자 실행`;
-}
-
-function confirmInvest() {
-  if (!selectedInvestType) return;
-  invest(selectedInvestType);
-}
-
-// ── INVEST ──
-function invest(type) {
-  const amount = parseInt(document.getElementById('inv-amount').value);
-  if (amount > state.cash) {
-    showToast('💸 현금이 부족합니다!');
-    addLog(`현금 부족! (보유: ${fmt(state.cash)})`, 'loss');
-    return;
-  }
-  const profile = INVESTMENT_PROFILES[type];
-  const ret = profile.returns();
-  const gain = Math.round(amount * ret);
-  state.cash -= amount;
-
-  if (type === 'savings') {
-    state.savings += amount;
-    addLog(`${profile.name} ${fmt(amount)} 예치 완료 (연 2% 복리)`, 'info');
-    showToast('🏦 저축 완료!');
+function doInvest(){
+  if(!selectedInv){ showToast('먼저 투자 종류를 선택하세요!','info'); return; }
+  const amount=parseInt(document.getElementById('inv-range').value);
+  if(amount>state.cash){ showToast('현금이 부족해요!','loss'); return; }
+  const prof=INV[selectedInv];
+  state.cash-=amount;
+  if(selectedInv==='savings'){
+    state.savings+=amount;
+    addLog(`${prof.emoji} 저축 ${fmt(amount)} 예치 (연 2% 복리)`,'info');
+    showToast(`💵 저축 ${fmt(amount)} 예치!`,'info');
+    floatNumber('+'+fmt(amount),'var(--blue)');
   } else {
-    const loss_event = Math.random() < profile.risk;
-    if (loss_event) {
-      const lossRate = randBetween(0.05, 0.15);
-      const lost = Math.round(amount * lossRate);
-      state.invested += (amount - lost);
-      addLog(`⚠️ ${profile.name} 리스크 발생! ${fmt(lost)} 손실 후 ${fmt(amount - lost)} 투자`, 'loss');
-      showToast(`⚠️ 리스크 발생! -${fmt(lost)}`);
+    if(prof.riskChance&&Math.random()<prof.riskChance){
+      const lost=amount*rand(.05,.2)|0;
+      state.invested+=(amount-lost); state.investType=selectedInv;
+      addLog(`⚠️ ${prof.emoji} 진입 중 손실 -${fmt(lost)}, ${fmt(amount-lost)} 투자됨`,'loss');
+      showToast(`⚠️ ${prof.name} 진입 손실 -${fmt(lost)}`,'loss');
     } else {
-      state.invested += amount;
-      addLog(`${profile.name} ${fmt(amount)} 투자 시작`, 'info');
-      showToast(`📈 ${profile.name} 투자 시작!`);
+      state.invested+=amount; state.investType=selectedInv;
+      addLog(`${prof.emoji} ${prof.name} ${fmt(amount)} 투자 시작`,'info');
+      showToast(`${prof.emoji} ${prof.name} ${fmt(amount)} 투자!`,'info');
     }
-    state.investType = type;
   }
+  unlockAch('first-invest');
   updateUI();
 }
 
-// ── NEXT TURN ──
-function nextTurn() {
+function nextTurn(){
   state.turn++;
-
-  const interest = applySavingsInterest();
-  if (interest > 0) addLog(`💵 저축 이자 +${fmt(interest)} (복리)`, 'profit');
-
-  if (state.invested > 0 && state.investType) {
-    const profile = INVESTMENT_PROFILES[state.investType];
-    const ret = profile.returns();
-    const gain = Math.round(state.invested * ret);
-    state.invested += gain;
-    if (state.invested < 0) state.invested = 0;
-    const emoji = gain >= 0 ? '📈' : '📉';
-    addLog(`${emoji} ${profile.name} 수익: ${gain >= 0 ? '+' : ''}${fmt(gain)} (연환산 ${(ret * 400).toFixed(1)}%)`, gain >= 0 ? 'profit' : 'loss');
+  if(state.savings>0){ const i=state.savings*.005|0; state.savings+=i; if(i>0){addLog(`💵 저축 이자 +${fmt(i)} (복리)`,'profit'); floatNumber('+'+fmt(i),'var(--blue)');} }
+  if(state.invested>0&&state.investType){
+    const prof=INV[state.investType];
+    const ret=prof.qRate(); const gain=state.invested*ret|0;
+    state.invested+=gain; if(state.invested<0) state.invested=0;
+    addLog(`${gain>=0?'📈':'📉'} ${prof.name} ${gain>=0?'+':''}${fmt(gain)} (분기 ${(ret*100).toFixed(1)}%)`,gain>=0?'profit':'loss');
+    if(gain>0) floatNumber('+'+fmt(gain),'var(--green)');
+    else if(gain<0) floatNumber(fmt(gain),'var(--red)');
+    if(selectedInv==='crypto'&&gain>200) unlockAch('crypto-win');
   }
-
-  const antIncome = state.ants * 10;
-  state.cash += antIncome;
-  addLog(`🐜 개미 ${state.ants}마리 → +${fmt(antIncome)} 생산`, 'profit');
-
-  applyInflation();
-  addLog(`🌡️ 인플레이션 ${(state.inflation * 100).toFixed(1)}% 진행 중`, 'loss');
-
-  wealthHistory.push(netWorth());
-  if (wealthHistory.length > 30) wealthHistory.shift();
-
-  document.getElementById('season-badge').textContent = `📅 ${state.turn}분기 진행 중`;
-
-  if (netWorth() >= 10000) { endGame(true); return; }
-  if (netWorth() <= 0) { endGame(false); return; }
-
+  let income=state.ants*10;
+  if(state.strikeNext){ income=income/2|0; state.strikeNext=false; addLog('😤 파업으로 수입 반토막!','loss'); }
+  state.cash+=income;
+  addLog(`🐜 개미 ${state.ants}마리 → +${fmt(income)} 수입`,'profit');
+  floatNumber('+'+fmt(income),'var(--gold)');
+  state.inflationFactor*=(1+state.inflation/4);
+  state.inflation=Math.max(.01,Math.min(.12,state.inflation+rand(-.002,.002)));
+  addLog(`🌡️ 인플레이션 ${(state.inflation*100).toFixed(1)}%`,'loss');
+  if(Math.random()<.3) triggerEvent();
+  if(state.turn>=10) unlockAch('survived');
+  const nw=netWorth();
+  if(nw>=2000) unlockAch('2000');
+  if(nw>=5000) unlockAch('5000');
+  if(state.ants>=10) unlockAch('10ants');
+  if(nw>=10000){ endGame(true); return; }
+  if(nw<=0){ endGame(false); return; }
   updateUI();
 }
 
-// ── ACTIONS ──
-function withdrawSavings() {
-  if (state.savings <= 0) { showToast('저축 잔액이 없어요'); return; }
-  const amt = state.savings;
-  state.cash += amt; state.savings = 0;
-  addLog(`🏦 저축 인출: +${fmt(amt)}`, 'info');
-  showToast(`🏦 저축 인출 +${fmt(amt)}`);
-  updateUI();
+function netWorth(){ return state.cash+state.savings+state.invested; }
+
+function buyAnts(){ if(state.cash<50){showToast('현금 50 필요!','loss');return;} state.cash-=50; state.ants++; addLog(`🐜 일개미 고용! 총 ${state.ants}마리`,'info'); showToast(`🐜 고용! 이제 ${state.ants}마리`,'info'); floatNumber('+1🐜','var(--text)'); unlockAch('10ants'); updateUI(); }
+function withdrawSavings(){ if(state.savings<=0){showToast('저축 잔액 없음','loss');return;} const a=state.savings; state.cash+=a; state.savings=0; addLog(`🏦 저축 인출 +${fmt(a)}`,'info'); showToast(`🏦 인출 +${fmt(a)}`,'info'); updateUI(); }
+function withdrawInvested(){ if(state.invested<=0){showToast('투자 자산 없음','loss');return;} const a=state.invested; state.cash+=a; state.invested=0; state.investType=null; addLog(`💸 투자 회수 +${fmt(a)}`,'info'); showToast(`💸 회수 +${fmt(a)}`,'info'); updateUI(); }
+function resetGame(){ document.getElementById('gameover').style.display='none'; document.getElementById('log').innerHTML=''; initState(); updateUI(); addLog('게임 재시작! 목표: 10,000 달성 🏆','info'); }
+
+function triggerEvent(){
+  const ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
+  const result=ev.effect(state);
+  document.getElementById('event-icon').textContent=ev.icon;
+  document.getElementById('event-title').textContent=ev.title;
+  document.getElementById('event-desc').textContent=ev.desc;
+  const el=document.getElementById('event-effect'); el.textContent=result.txt; el.className=result.cls;
+  document.getElementById('event-popup').classList.add('show');
+  addLog(`⚡ 이벤트: ${ev.title} → ${result.txt}`,'event');
+  showToast(`⚡ ${ev.title}`,'event');
+}
+function closeEvent(){ document.getElementById('event-popup').classList.remove('show'); updateUI(); }
+
+const MOODS=[[1,'조용한 콜로니...'],[5,'활기 넘치는 콜로니!'],[15,'🔥 개미 군단 형성!'],[30,'👑 제국급 콜로니!!!']];
+function getColonyMood(n){ let m=MOODS[0][1]; for(const[t,s] of MOODS) if(n>=t) m=s; return m; }
+
+function updateUI(){
+  const nw=netWorth();
+  document.getElementById('hud-cash').textContent=fmt(state.cash);
+  document.getElementById('hud-net').textContent=fmt(nw);
+  document.getElementById('hud-ants').textContent=state.ants;
+  document.getElementById('hud-turn').textContent=state.turn;
+  document.getElementById('hud-inflation').textContent=(state.inflation*100).toFixed(1)+'%';
+  document.getElementById('stat-invested').textContent=fmt(state.invested);
+  document.getElementById('stat-savings').textContent=fmt(state.savings);
+  const goalPct=Math.min(nw/10000*100,100);
+  document.getElementById('goal-bar').style.width=goalPct+'%';
+  document.getElementById('goal-pct').textContent=goalPct.toFixed(1)+'%';
+  const antShow=Math.min(state.ants,20);
+  document.getElementById('colony-vis').textContent='🐜'.repeat(antShow)+(state.ants>20?` ×${state.ants}`:'');
+  document.getElementById('colony-mood').textContent=getColonyMood(state.ants);
+  document.getElementById('colony-lbl').textContent=state.ants+'마리';
+  document.getElementById('colony-bar').style.width=Math.min(state.ants,100)+'%';
+  const maxInv=Math.max(10,Math.floor(state.cash/10)*10);
+  document.getElementById('inv-range').max=Math.min(maxInv,100000);
+  document.getElementById('inv-max').textContent='보유: '+fmt(state.cash);
+  syncSlider();
+}
+function syncSlider(){ document.getElementById('inv-val').textContent=fmt(document.getElementById('inv-range').value); }
+
+function showToast(msg,type='info'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; c.appendChild(t);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); },2500);
+}
+function floatNumber(txt,color){
+  const el=document.createElement('div'); el.className='float-num'; el.textContent=txt; el.style.color=color;
+  el.style.left=(25+Math.random()*50)+'vw'; el.style.top=(25+Math.random()*35)+'vh';
+  document.body.appendChild(el); setTimeout(()=>el.remove(),1300);
+}
+function unlockAch(id){
+  if(achievements[id]) return; achievements[id]=true;
+  const el=document.getElementById('ach-'+id);
+  if(el){ el.classList.add('unlocked'); showToast('🏅 업적: '+el.textContent.trim(),'info'); }
+}
+function addLog(msg,type='info'){
+  const log=document.getElementById('log');
+  const el=document.createElement('div'); el.className='log-entry '+type; el.textContent=`[Q${state.turn}] ${msg}`;
+  log.prepend(el); while(log.children.length>40) log.removeChild(log.lastChild);
+}
+function endGame(won){
+  const nw=netWorth();
+  document.getElementById('go-title').textContent=won?'🏆 목표 달성!':'💸 파산...';
+  document.getElementById('go-msg').textContent=won?`${state.turn}분기 만에 성공! 최고의 개미 재테커!`:`${state.turn}분기에 모든 자산을 잃었어요.`;
+  document.getElementById('go-stats').innerHTML=`<div class="go-stat"><span>최종 순자산</span><span>${fmt(nw)}</span></div><div class="go-stat"><span>총 분기</span><span>${state.turn}분기</span></div><div class="go-stat"><span>개미 수</span><span>${state.ants}마리</span></div>`;
+  document.getElementById('gameover').style.display='flex';
 }
 
-function withdrawInvested() {
-  if (state.invested <= 0) { showToast('투자 자산이 없어요'); return; }
-  const amt = state.invested;
-  state.cash += amt; state.invested = 0; state.investType = null;
-  addLog(`💸 투자 회수: +${fmt(amt)}`, 'info');
-  showToast(`💸 투자 회수 +${fmt(amt)}`);
-  updateUI();
-}
-
-function buyAnts() {
-  const cost = 50;
-  if (state.cash < cost) { showToast('현금이 부족합니다!'); return; }
-  state.cash -= cost; state.ants++;
-  addLog(`🐜 일개미 고용! (총 ${state.ants}마리)`, 'info');
-  showToast(`🐜 개미 고용! 총 ${state.ants}마리`);
-  updateUI();
-}
-
-// ── CHART ──
-function drawChart() {
-  const canvas = document.getElementById('wealth-chart');
-  const ctx = canvas.getContext('2d');
-  const W = canvas.offsetWidth;
-  const H = 70;
-  canvas.width = W;
-  canvas.height = H;
-
-  if (wealthHistory.length < 2) return;
-  ctx.clearRect(0, 0, W, H);
-
-  const min = Math.min(...wealthHistory) * 0.9;
-  const max = Math.max(...wealthHistory) * 1.05;
-  const range = max - min || 1;
-
-  const pts = wealthHistory.map((v, i) => [
-    (i / (wealthHistory.length - 1)) * W,
-    H - ((v - min) / range) * (H - 10) - 4
-  ]);
-
-  // Gradient fill
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, 'rgba(78,203,113,0.3)');
-  grad.addColorStop(1, 'rgba(78,203,113,0)');
-  ctx.beginPath();
-  ctx.moveTo(pts[0][0], H);
-  pts.forEach(([x,y]) => ctx.lineTo(x, y));
-  ctx.lineTo(pts[pts.length-1][0], H);
-  ctx.closePath();
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  // Line
-  ctx.beginPath();
-  pts.forEach(([x,y], i) => i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y));
-  ctx.strokeStyle = '#4ecb71';
-  ctx.lineWidth = 2;
-  ctx.lineJoin = 'round';
-  ctx.stroke();
-
-  // Last point dot
-  const [lx, ly] = pts[pts.length-1];
-  ctx.beginPath();
-  ctx.arc(lx, ly, 4, 0, Math.PI*2);
-  ctx.fillStyle = '#ffd700';
-  ctx.fill();
-
-  // Goal line
-  const goalY = H - ((10000 - min) / range) * (H - 10) - 4;
-  if (goalY > 0 && goalY < H) {
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(0, goalY);
-    ctx.lineTo(W, goalY);
-    ctx.strokeStyle = 'rgba(255,215,0,0.4)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-}
-
-// ── UI ──
-function fmt(n) { return Math.round(n).toLocaleString('ko-KR'); }
-
-function updateSlider() {
-  const v = document.getElementById('inv-amount').value;
-  document.getElementById('inv-amount-label').textContent = fmt(v);
-  const maxVal = Math.max(10, Math.floor(state.cash / 10) * 10);
-  document.getElementById('inv-amount').max = Math.min(maxVal, 100000);
-}
-
-let toastTimer;
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-function updateUI() {
-  const nw = netWorth();
-  document.getElementById('stat-cash').textContent = fmt(state.cash);
-  document.getElementById('stat-invested').textContent = fmt(state.invested);
-  document.getElementById('stat-savings').textContent = fmt(state.savings);
-  document.getElementById('stat-net').textContent = fmt(nw);
-  document.getElementById('stat-real').textContent = fmt(realValue(nw));
-
-  document.getElementById('tk-cash').textContent = fmt(state.cash);
-  document.getElementById('tk-inv').textContent = fmt(state.invested);
-  document.getElementById('tk-sav').textContent = fmt(state.savings);
-  document.getElementById('tk-inf').textContent = (state.inflation * 100).toFixed(1) + '%';
-  document.getElementById('tk-ants').textContent = state.ants + '마리';
-
-  document.getElementById('turn-display').textContent = state.turn;
-
-  const antCount = Math.min(state.ants, 40);
-  document.getElementById('colony-display').innerHTML =
-    '<span class="colony-ants">' + '🐜'.repeat(antCount) + '</span>' +
-    (state.ants > 40 ? ` <span style="color:var(--gold);font-size:0.9rem">+${state.ants-40}</span>` : '');
-  document.getElementById('colony-size-label').textContent = `${state.ants} / 100마리`;
-  document.getElementById('colony-bar').style.width = Math.min(state.ants, 100) + '%';
-
-  const goalPct = Math.min((nw / 10000) * 100, 100);
-  document.getElementById('goal-bar').style.width = goalPct + '%';
-  document.getElementById('goal-pct').textContent = goalPct.toFixed(1) + '%';
-
-  updateSlider();
-  drawChart();
-}
-
-function addLog(msg, type = '') {
-  const log = document.getElementById('log');
-  const el = document.createElement('div');
-  el.className = `log-entry ${type}`;
-  el.innerHTML = `<span class="log-q">Q${state.turn}</span><span>${msg}</span>`;
-  log.prepend(el);
-}
-
-function endGame(won) {
-  document.getElementById('gameover').style.display = 'flex';
-  if (won) {
-    document.getElementById('gameover-title').textContent = '🏆 승리!';
-    document.getElementById('gameover-msg').textContent =
-      `${state.turn}분기 만에 목표 달성!\n최종 순자산: ${fmt(netWorth())} | 개미: ${state.ants}마리`;
-  } else {
-    document.getElementById('gameover-title').textContent = '💸 파산...';
-    document.getElementById('gameover-msg').textContent =
-      `${state.turn}분기에 자산이 모두 소진됐습니다.\n다시 도전하세요!`;
-  }
-}
-
-function resetGame() {
-  document.getElementById('gameover').style.display = 'none';
-  document.getElementById('log').innerHTML = '';
-  document.querySelectorAll('.inv-btn').forEach(b => b.classList.remove('selected'));
-  const btn = document.getElementById('invest-btn');
-  btn.disabled = true;
-  btn.textContent = '투자 유형을 선택하세요';
-  initState();
-  updateUI();
-  addLog('게임 시작! 목표: 순자산 10,000 달성', 'info');
-  document.getElementById('season-badge').textContent = '📅 1분기 진행 중';
-}
-
-// START
 initState();
-updateUI();
-addLog('게임 시작! 목표: 순자산 10,000 달성', 'info');
 </script>
 </body>
 </html>
