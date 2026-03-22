@@ -8,533 +8,579 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#080f08;--bg2:#0f1a0f;--bg3:#162416;
-  --border:#1e4018;--gold:#ffd700;--green:#4ecb71;--red:#ff5555;
-  --text:#c8e0b0;--dim:#6a9050;--orange:#ff9944;--blue:#55aaff;
+  --bg:#060d06;--gold:#ffd700;--green:#4ecb71;--red:#ff5555;
+  --text:#c8e0b0;--dim:#5a8040;--orange:#ff9944;--blue:#55aaff;
+  --border:#1a3a14;
 }
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
 
-/* TUTORIAL OVERLAY */
-#tutorial{position:fixed;inset:0;background:#000d;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
-.tut-box{background:#0f2010;border:2px solid var(--gold);border-radius:20px;max-width:480px;width:100%;padding:32px;text-align:center;animation:popIn .4s ease}
-@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
-.tut-box h2{color:var(--gold);font-size:1.6rem;margin-bottom:8px}
-.tut-box .tut-ant{font-size:3rem;margin:12px 0;animation:bounce 1s infinite}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.tut-steps{text-align:left;margin:16px 0;display:flex;flex-direction:column;gap:10px}
-.tut-step{background:#1a3020;border-radius:10px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start}
-.tut-step .icon{font-size:1.3rem;flex-shrink:0}
-.tut-step p{font-size:.88rem;color:var(--text);line-height:1.5}
-.tut-step strong{color:var(--gold)}
-.tut-btn{background:var(--gold);color:#000;border:none;border-radius:12px;padding:14px 32px;font-size:1.1rem;font-weight:900;cursor:pointer;margin-top:8px;width:100%;transition:.2s}
-.tut-btn:hover{background:#ffe44d;transform:translateY(-2px)}
+/* ── FLOATING NUMBERS ── */
+.float-num{position:fixed;font-size:1.1rem;font-weight:900;pointer-events:none;z-index:800;animation:floatUp 1.4s ease forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-90px) scale(1.3)}}
 
-/* EVENT POPUP */
-#event-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:#0f2010;border:2px solid var(--gold);border-radius:20px;padding:28px 36px;z-index:500;text-align:center;min-width:280px;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
-#event-popup.show{transform:translate(-50%,-50%) scale(1)}
-#event-icon{font-size:3rem;margin-bottom:8px}
-#event-title{font-size:1.2rem;color:var(--gold);font-weight:900;margin-bottom:6px}
-#event-desc{font-size:.9rem;color:var(--text);margin-bottom:16px;line-height:1.5}
-#event-effect{font-size:1.1rem;font-weight:700}
-.event-btn{background:#1e4018;border:1px solid var(--gold);color:var(--gold);border-radius:10px;padding:10px 28px;cursor:pointer;font-size:.95rem;transition:.2s}
-.event-btn:hover{background:#2d6020}
-
-/* TOAST */
-#toast-container{position:fixed;top:20px;right:20px;z-index:900;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:#0f2010;border:1px solid;border-radius:12px;padding:10px 18px;font-size:.88rem;font-weight:700;opacity:0;transform:translateX(60px);transition:.3s;max-width:260px}
+/* ── TOAST ── */
+#toast-box{position:fixed;top:16px;right:16px;z-index:900;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{background:#0a1a0a;border:1px solid;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:700;opacity:0;transform:translateX(50px);transition:.25s;max-width:240px}
 .toast.show{opacity:1;transform:translateX(0)}
-.toast.profit{border-color:var(--green);color:var(--green)}
-.toast.loss{border-color:var(--red);color:var(--red)}
-.toast.info{border-color:var(--gold);color:var(--gold)}
-.toast.event{border-color:var(--orange);color:var(--orange)}
+.toast.g{border-color:var(--green);color:var(--green)}
+.toast.r{border-color:var(--red);color:var(--red)}
+.toast.y{border-color:var(--gold);color:var(--gold)}
+.toast.o{border-color:var(--orange);color:var(--orange)}
 
-/* FLOATING NUMBER */
-.float-num{position:fixed;font-size:1.2rem;font-weight:900;pointer-events:none;z-index:800;animation:floatUp 1.2s ease forwards}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-80px)}}
+/* ── EVENT BANNER ── */
+#ev-banner{position:fixed;top:0;left:0;right:0;z-index:700;padding:14px 20px;text-align:center;font-size:1rem;font-weight:900;transform:translateY(-100%);transition:.4s;background:#0f2010;border-bottom:2px solid var(--gold)}
+#ev-banner.show{transform:translateY(0)}
 
-/* MAIN LAYOUT */
-.header{text-align:center;padding:28px 16px 16px}
-.header h1{font-size:2rem;color:var(--gold);text-shadow:0 0 30px #ffd70066;font-weight:900}
-.header .sub{color:var(--dim);font-size:.82rem;margin-top:4px}
-.container{max-width:940px;margin:0 auto;padding:0 16px 60px;display:flex;flex-direction:column;gap:14px}
-.row{display:flex;gap:14px;flex-wrap:wrap}
-.card{background:#0f1a0f;border:1px solid var(--border);border-radius:16px;padding:18px 20px;flex:1;min-width:220px;position:relative;overflow:hidden}
-.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#2d6020,transparent)}
-.card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:14px}
+/* ── HEADER ── */
+.hdr{text-align:center;padding:22px 16px 10px}
+.hdr h1{font-size:1.8rem;color:var(--gold);font-weight:900;text-shadow:0 0 24px #ffd70060}
+.hdr .sub{font-size:.78rem;color:var(--dim);margin-top:3px}
 
-/* HUD BAR */
-.hud{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
-.hud-item{background:#0f1a0f;border:1px solid var(--border);border-radius:12px;padding:10px 18px;text-align:center;flex:1;min-width:110px}
-.hud-item .hval{font-size:1.3rem;font-weight:900;color:var(--gold)}
-.hud-item .hlbl{font-size:.72rem;color:var(--dim);margin-top:2px}
+/* ── SPEED CONTROLS ── */
+.speed-bar{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 16px}
+.spd-btn{background:#0a1a0a;border:1px solid var(--border);border-radius:20px;padding:6px 16px;color:var(--dim);font-size:.82rem;cursor:pointer;transition:.2s;font-weight:700}
+.spd-btn:hover,.spd-btn.active{background:#1a3a14;border-color:var(--gold);color:var(--gold)}
+.pause-btn{background:#1a1a08;border:2px solid var(--gold);border-radius:20px;padding:7px 22px;color:var(--gold);font-size:.9rem;font-weight:900;cursor:pointer;transition:.2s}
+.pause-btn:hover{background:#2a2a10}
+.pause-btn.paused{background:#2a1a08;border-color:var(--orange);color:var(--orange)}
 
-/* PROGRESS */
-.pbar-wrap{margin:8px 0}
-.pbar-lbl{display:flex;justify-content:space-between;font-size:.75rem;color:var(--dim);margin-bottom:4px}
-.pbar{background:#0a120a;border-radius:20px;height:14px;overflow:hidden;border:1px solid var(--border)}
-.pfill{height:100%;border-radius:20px;transition:width .5s;background:linear-gradient(90deg,#1e5a1e,var(--gold))}
+/* ── MAIN GRID ── */
+.wrap{max-width:960px;margin:0 auto;padding:0 14px 60px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:700px){.wrap{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.wrap{grid-template-columns:1fr}}
+.card{background:#0a160a;border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#2d6020,transparent)}
+.card .ctitle{font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);margin-bottom:12px}
+.card.full{grid-column:1/-1}
 
-/* COLONY */
-#colony-vis{font-size:1.6rem;line-height:1.4;min-height:48px;word-break:break-all;text-align:center;padding:8px 0;transition:all .3s}
-.colony-mood{text-align:center;font-size:.82rem;margin-top:6px}
+/* ── COLONY VISUAL ── */
+#colony-canvas{width:100%;height:100px;font-size:1.4rem;display:flex;flex-wrap:wrap;align-content:flex-start;gap:1px;overflow:hidden;line-height:1.3}
+.colony-stat{display:flex;justify-content:space-between;font-size:.8rem;margin-top:8px}
+.colony-stat .v{color:var(--gold);font-weight:700}
 
-/* INVESTMENT CARDS */
-.inv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.inv-card{background:#0a120a;border:2px solid var(--border);border-radius:14px;padding:14px 12px;cursor:pointer;transition:all .2s;position:relative;text-align:center}
-.inv-card:hover{border-color:var(--gold);background:#142014;transform:translateY(-3px);box-shadow:0 8px 20px #00000060}
-.inv-card.selected{border-color:var(--gold);background:#1a2e10}
-.inv-card .inv-emoji{font-size:1.6rem;margin-bottom:4px}
-.inv-card .inv-name{font-size:.9rem;font-weight:700;color:var(--gold)}
-.inv-card .inv-rate{font-size:.75rem;color:var(--text);margin:3px 0}
-.inv-card .inv-risk{font-size:.72rem;color:var(--dim)}
-.inv-card .inv-tip{font-size:.68rem;color:var(--dim);margin-top:4px;font-style:italic}
+/* ── BIG NUMBERS ── */
+.big-num{font-size:1.8rem;font-weight:900;color:var(--gold);line-height:1}
+.big-label{font-size:.72rem;color:var(--dim);margin-top:4px}
+.big-sub{font-size:.82rem;margin-top:6px}
 
-/* AMOUNT INPUT */
-.amount-wrap{margin:14px 0 0}
-.amount-wrap label{font-size:.8rem;color:var(--dim);display:block;margin-bottom:6px}
-input[type=range]{width:100%;accent-color:var(--gold);cursor:pointer;height:6px}
-.amount-display{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
-.amount-display .aval{font-size:1.1rem;font-weight:900;color:var(--gold)}
-.amount-display .amax{font-size:.75rem;color:var(--dim)}
-.invest-go{width:100%;margin-top:12px;background:linear-gradient(135deg,#1e5a1e,#2d8020);border:1px solid var(--green);border-radius:12px;padding:13px;color:var(--green);font-size:1rem;font-weight:700;cursor:pointer;transition:.2s}
-.invest-go:hover{background:linear-gradient(135deg,#2d8020,#3d9030);transform:translateY(-2px)}
+/* ── GOAL BAR ── */
+.gbar-wrap{margin:6px 0}
+.gbar-lbl{display:flex;justify-content:space-between;font-size:.72rem;color:var(--dim);margin-bottom:3px}
+.gbar{background:#060d06;border-radius:20px;height:12px;border:1px solid var(--border);overflow:hidden}
+.gfill{height:100%;border-radius:20px;background:linear-gradient(90deg,#1a5010,var(--gold));transition:width .6s}
 
-/* ACTIONS */
-.act-grid{display:grid;gap:10px}
-.act-btn{background:#0a120a;border:1px solid var(--border);border-radius:12px;padding:13px 16px;cursor:pointer;transition:all .2s;text-align:left;color:var(--text)}
-.act-btn:hover{border-color:var(--gold);background:#142014}
-.act-btn .act-top{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.92rem;margin-bottom:2px}
-.act-btn .act-desc{font-size:.72rem;color:var(--dim);padding-left:28px}
-.next-turn-btn{background:linear-gradient(135deg,#1a4010,#2a6020);border:2px solid var(--green);border-radius:14px;padding:16px;cursor:pointer;color:var(--green);font-size:1.1rem;font-weight:900;width:100%;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
-.next-turn-btn:hover{background:linear-gradient(135deg,#2a6020,#3a8030);transform:translateY(-2px);box-shadow:0 6px 20px #00ff0020}
+/* ── STRATEGY BUTTONS ── */
+.strat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.strat-btn{background:#060d06;border:2px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:.2s;color:var(--text)}
+.strat-btn:hover{border-color:var(--gold);background:#112011}
+.strat-btn.on{border-color:var(--gold);background:#1a2e10}
+.strat-btn .se{font-size:1.4rem}
+.strat-btn .sn{font-size:.8rem;font-weight:700;color:var(--gold);margin-top:3px}
+.strat-btn .sd{font-size:.68rem;color:var(--dim);margin-top:2px}
 
-/* LOG */
-#log{height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
-.log-entry{font-size:.78rem;padding:5px 8px;border-radius:6px;border-left:3px solid}
-.log-entry.profit{background:#0a2010;border-color:var(--green);color:var(--green)}
-.log-entry.loss{background:#200a0a;border-color:var(--red);color:var(--red)}
-.log-entry.info{background:#1a1a08;border-color:var(--gold);color:var(--gold)}
-.log-entry.event{background:#1a0f00;border-color:var(--orange);color:var(--orange)}
+/* ── MANUAL ACTIONS ── */
+.man-btn{width:100%;background:#0a160a;border:1px solid var(--border);border-radius:10px;padding:11px;cursor:pointer;color:var(--text);font-size:.85rem;font-weight:700;transition:.2s;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.man-btn:hover{border-color:var(--gold);background:#112011}
+.man-btn .cost{margin-left:auto;color:var(--dim);font-size:.75rem}
 
-/* ACHIEVEMENTS */
-.ach-grid{display:flex;flex-wrap:wrap;gap:8px}
-.ach{background:#0a120a;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.78rem;color:var(--dim);transition:.3s;display:flex;align-items:center;gap:6px}
-.ach.unlocked{border-color:var(--gold);color:var(--gold);background:#1a1a08;animation:achPop .4s ease}
-@keyframes achPop{0%{transform:scale(1.3)}100%{transform:scale(1)}}
+/* ── LOG ── */
+#log{height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.le{font-size:.74rem;padding:3px 7px;border-radius:5px;border-left:2px solid}
+.le.p{background:#081808;border-color:var(--green);color:var(--green)}
+.le.l{background:#180808;border-color:var(--red);color:var(--red)}
+.le.i{background:#181808;border-color:var(--gold);color:var(--gold)}
+.le.e{background:#180c00;border-color:var(--orange);color:var(--orange)}
 
-/* TIPS TICKER */
-.tips-bar{background:#0a120a;border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:.8rem;color:var(--dim);overflow:hidden;white-space:nowrap}
-.tips-inner{display:inline-block;animation:scroll 22s linear infinite}
-@keyframes scroll{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}
+/* ── PORTFOLIO ── */
+.port-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.port-row:last-child{border:none}
+.port-name{color:var(--dim)}
+.port-val{font-weight:700}
 
-/* GAMEOVER */
-#gameover{display:none;position:fixed;inset:0;background:#000c;z-index:800;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:20px}
-.go-box{background:#0f2010;border:2px solid var(--gold);border-radius:20px;padding:36px;text-align:center;max-width:400px;animation:popIn .4s ease}
-.go-box h2{font-size:2.2rem;color:var(--gold);margin-bottom:8px}
-.go-box p{color:var(--text);font-size:.95rem;line-height:1.6;margin-bottom:16px}
-.go-stats{background:#0a120a;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left}
-.go-stat{display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0;border-bottom:1px solid var(--border)}
+/* ── CHART ── */
+#chart{width:100%;height:80px;overflow:hidden;position:relative}
+.chart-bar{position:absolute;bottom:0;width:3px;background:var(--gold);border-radius:2px 2px 0 0;transition:height .3s}
+
+/* ── MILESTONE ── */
+.ms-grid{display:flex;flex-wrap:wrap;gap:6px}
+.ms{background:#060d06;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.72rem;color:var(--dim);transition:.3s}
+.ms.done{border-color:var(--gold);color:var(--gold);background:#181808}
+
+/* ── GAMEOVER ── */
+#gameover{display:none;position:fixed;inset:0;background:#000d;z-index:999;align-items:center;justify-content:center}
+.go-box{background:#0a1a0a;border:2px solid var(--gold);border-radius:20px;padding:36px;text-align:center;max-width:380px;animation:popIn .4s ease}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.go-box h2{font-size:2rem;color:var(--gold);margin-bottom:8px}
+.go-box p{color:var(--text);font-size:.9rem;margin-bottom:20px;line-height:1.6}
+.go-stat{display:flex;justify-content:space-between;font-size:.82rem;padding:5px 0;border-bottom:1px solid var(--border)}
 .go-stat:last-child{border:none}
-.go-btn{background:var(--gold);color:#000;border:none;border-radius:12px;padding:14px 40px;font-size:1rem;font-weight:900;cursor:pointer;width:100%}
-.go-btn:hover{background:#ffe44d}
+.go-btn{background:var(--gold);color:#000;border:none;border-radius:12px;padding:13px 36px;font-size:1rem;font-weight:900;cursor:pointer;margin-top:16px;width:100%}
 
-@media(max-width:600px){.inv-grid{grid-template-columns:1fr 1fr}.hud-item{min-width:80px}}
+/* ── TICKER ── */
+.ticker{background:#060d06;border-top:1px solid var(--border);padding:8px 16px;font-size:.75rem;color:var(--dim);overflow:hidden;white-space:nowrap;position:fixed;bottom:0;left:0;right:0}
+.tick-inner{display:inline-block;animation:tick 25s linear infinite}
+@keyframes tick{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}
 </style>
 </head>
 <body>
 
-<!-- TUTORIAL -->
-<div id="tutorial">
-  <div class="tut-box">
-    <h2>🐜 개미 재테크 시뮬레이터</h2>
-    <div class="tut-ant">🐜💰</div>
-    <p style="font-size:.9rem;color:var(--dim);margin-bottom:16px">개미 콜로니를 키우며 <strong style="color:var(--gold)">순자산 10,000</strong>을 달성하세요!</p>
-    <div class="tut-steps">
-      <div class="tut-step">
-        <span class="icon">⏭️</span>
-        <p><strong>다음 분기</strong> 버튼으로 시간을 넘기세요. 분기마다 수입이 들어오고 인플레이션이 발생해요.</p>
-      </div>
-      <div class="tut-step">
-        <span class="icon">🐜</span>
-        <p><strong>일개미 고용</strong>으로 콜로니를 키우세요. 개미가 많을수록 분기 수입이 늘어요!</p>
-      </div>
-      <div class="tut-step">
-        <span class="icon">📈</span>
-        <p>남는 돈은 <strong>투자</strong>하세요. 저축은 안전하지만 느리고, 코인은 위험하지만 대박날 수 있어요.</p>
-      </div>
-      <div class="tut-step">
-        <span class="icon">🌡️</span>
-        <p>가만히 있으면 <strong>인플레이션</strong>으로 돈 가치가 떨어져요. 무조건 굴려야 해요!</p>
-      </div>
-    </div>
-    <button class="tut-btn" onclick="startGame()">🚀 게임 시작!</button>
-  </div>
-</div>
+<div id="ev-banner"></div>
+<div id="toast-box"></div>
 
-<!-- EVENT POPUP -->
-<div id="event-popup">
-  <div id="event-icon">⚡</div>
-  <div id="event-title">이벤트 발생!</div>
-  <div id="event-desc">설명</div>
-  <div id="event-effect" class="profit">효과</div>
-  <br>
-  <button class="event-btn" onclick="closeEvent()">확인!</button>
-</div>
-
-<!-- TOAST CONTAINER -->
-<div id="toast-container"></div>
-
-<!-- HEADER -->
-<div class="header">
+<div class="hdr">
   <h1>🐜 개미 재테크 시뮬레이터</h1>
-  <div class="sub">순자산 10,000을 달성하라! | ant money_bot × AntIdea_bot</div>
+  <div class="sub">개미 제국을 자동으로 굴려서 순자산 10,000을 달성하라!</div>
 </div>
 
-<div class="container">
+<!-- SPEED CONTROLS -->
+<div class="speed-bar">
+  <button class="spd-btn active" id="spd1" onclick="setSpeed(1)">1×</button>
+  <button class="spd-btn" id="spd2" onclick="setSpeed(2)">2×</button>
+  <button class="spd-btn" id="spd5" onclick="setSpeed(5)">5×</button>
+  <button class="pause-btn" id="pause-btn" onclick="togglePause()">⏸ 일시정지</button>
+  <button class="spd-btn" onclick="resetGame()" style="border-color:#5a1b1b;color:#ff9999">🔄</button>
+</div>
 
-  <!-- HUD -->
-  <div class="hud">
-    <div class="hud-item">
-      <div class="hval" id="hud-cash">1,000</div>
-      <div class="hlbl">💵 보유 자원</div>
-    </div>
-    <div class="hud-item">
-      <div class="hval" id="hud-net">1,000</div>
-      <div class="hlbl">💎 순자산</div>
-    </div>
-    <div class="hud-item">
-      <div class="hval" id="hud-ants">1</div>
-      <div class="hlbl">🐜 개미 수</div>
-    </div>
-    <div class="hud-item">
-      <div class="hval" id="hud-turn">1</div>
-      <div class="hlbl">📅 분기</div>
-    </div>
-    <div class="hud-item">
-      <div class="hval" id="hud-inflation" style="color:var(--orange)">3.0%</div>
-      <div class="hlbl">🌡️ 인플레</div>
-    </div>
-  </div>
+<div class="wrap">
 
-  <!-- GOAL PROGRESS -->
-  <div class="pbar-wrap" style="padding:0 4px">
-    <div class="pbar-lbl"><span>🏆 목표까지</span><span id="goal-pct">10%</span></div>
-    <div class="pbar"><div class="pfill" id="goal-bar" style="width:10%"></div></div>
-  </div>
-
-  <div class="row">
-    <!-- COLONY -->
-    <div class="card" style="flex:1.2">
-      <h2>🏠 내 콜로니</h2>
-      <div id="colony-vis">🐜</div>
-      <div class="colony-mood" id="colony-mood">조용한 콜로니...</div>
-      <div class="pbar-wrap" style="margin-top:10px">
-        <div class="pbar-lbl"><span>콜로니 규모</span><span id="colony-lbl">1마리</span></div>
-        <div class="pbar"><div class="pfill" id="colony-bar" style="width:1%"></div></div>
-      </div>
-      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div style="background:#0a120a;border-radius:8px;padding:8px;text-align:center">
-          <div style="font-size:.72rem;color:var(--dim)">📊 투자 자산</div>
-          <div style="font-weight:700;color:var(--green)" id="stat-invested">0</div>
-        </div>
-        <div style="background:#0a120a;border-radius:8px;padding:8px;text-align:center">
-          <div style="font-size:.72rem;color:var(--dim)">🏦 저축</div>
-          <div style="font-weight:700;color:var(--blue)" id="stat-savings">0</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- INVESTMENT -->
-    <div class="card" style="flex:1.8">
-      <h2>📈 투자 선택 — 고르고 금액 조절 후 투자하기!</h2>
-      <div class="inv-grid" id="inv-grid">
-        <div class="inv-card" onclick="selectInv('savings',this)">
-          <div class="inv-emoji">💵</div>
-          <div class="inv-name">저축</div>
-          <div class="inv-rate">연 2% 확정이자</div>
-          <div class="inv-risk">🟢 리스크 없음</div>
-          <div class="inv-tip">안전하지만 인플레이션 못 이겨요</div>
-        </div>
-        <div class="inv-card" onclick="selectInv('bond',this)">
-          <div class="inv-emoji">📜</div>
-          <div class="inv-name">채권</div>
-          <div class="inv-rate">연 4~6% 이자</div>
-          <div class="inv-risk">🟡 낮은 리스크</div>
-          <div class="inv-tip">꾸준히 안정적으로 벌어요</div>
-        </div>
-        <div class="inv-card" onclick="selectInv('stock',this)">
-          <div class="inv-emoji">📊</div>
-          <div class="inv-name">주식</div>
-          <div class="inv-rate">-20% ~ +30%</div>
-          <div class="inv-risk">🟠 중간 리스크</div>
-          <div class="inv-tip">대박 아니면 쪽박!</div>
-        </div>
-        <div class="inv-card" onclick="selectInv('crypto',this)">
-          <div class="inv-emoji">🪙</div>
-          <div class="inv-name">코인</div>
-          <div class="inv-rate">-50% ~ +100%</div>
-          <div class="inv-risk">🔴 극한 리스크</div>
-          <div class="inv-tip">도박... 하지만 짜릿해요</div>
-        </div>
-      </div>
-      <div class="amount-wrap">
-        <label>투자 금액</label>
-        <input type="range" id="inv-range" min="10" max="1000" step="10" value="200" oninput="syncSlider()">
-        <div class="amount-display">
-          <span class="aval" id="inv-val">200</span>
-          <span class="amax" id="inv-max">보유: 1,000</span>
-        </div>
-      </div>
-      <button class="invest-go" onclick="doInvest()">💰 투자하기</button>
-    </div>
-  </div>
-
-  <div class="row">
-    <!-- ACTIONS -->
-    <div class="card" style="flex:1">
-      <h2>⚡ 행동</h2>
-      <div class="act-grid">
-        <button class="next-turn-btn" onclick="nextTurn()">⏭️ 다음 분기로!</button>
-        <button class="act-btn" onclick="buyAnts()">
-          <div class="act-top">🐜 일개미 고용 <span style="color:var(--dim);font-size:.8rem;margin-left:auto">-50</span></div>
-          <div class="act-desc">분기 수입 +10 증가</div>
-        </button>
-        <button class="act-btn" onclick="withdrawSavings()">
-          <div class="act-top">🏦 저축 인출</div>
-          <div class="act-desc">저축 잔액을 현금으로 전환</div>
-        </button>
-        <button class="act-btn" onclick="withdrawInvested()">
-          <div class="act-top">💸 투자 회수</div>
-          <div class="act-desc">투자 자산을 현금으로 전환</div>
-        </button>
-        <button class="act-btn" style="border-color:#5a1b1b;color:#ff9999" onclick="resetGame()">
-          <div class="act-top">🔄 처음부터</div>
-        </button>
-      </div>
-    </div>
-
-    <!-- LOG -->
-    <div class="card" style="flex:1.5">
-      <h2>📋 거래 로그</h2>
-      <div id="log"></div>
-    </div>
-  </div>
-
-  <!-- ACHIEVEMENTS -->
+  <!-- COLONY -->
   <div class="card">
-    <h2>🏅 업적</h2>
-    <div class="ach-grid">
-      <div class="ach" id="ach-first-invest">📈 첫 투자</div>
-      <div class="ach" id="ach-10ants">🐜 개미 10마리</div>
-      <div class="ach" id="ach-2000">💰 자산 2,000</div>
-      <div class="ach" id="ach-5000">💎 자산 5,000</div>
-      <div class="ach" id="ach-crypto-win">🪙 코인 대박</div>
-      <div class="ach" id="ach-survived">🛡️ 10분기 생존</div>
-    </div>
+    <div class="ctitle">🏠 내 콜로니</div>
+    <div id="colony-canvas"></div>
+    <div class="colony-stat"><span>개미</span><span class="v" id="cnt-ants">1마리</span></div>
+    <div class="colony-stat"><span>분기 수입</span><span class="v" id="cnt-income">+10</span></div>
+    <div class="colony-stat"><span>경과 분기</span><span class="v" id="cnt-turn">Q1</span></div>
   </div>
 
-  <!-- TIPS -->
-  <div class="tips-bar">
-    <div class="tips-inner">💡 팁: 개미를 먼저 여러마리 고용하면 수입이 빨라져요! &nbsp;&nbsp;&nbsp; 🌡️ 인플레이션이 높아지면 저축보다 주식이 유리해요! &nbsp;&nbsp;&nbsp; 🪙 코인은 소액만 투자하는 게 정신건강에 좋아요! &nbsp;&nbsp;&nbsp; 📜 채권은 장기 보유할수록 복리 효과가 커요! &nbsp;&nbsp;&nbsp; 🐜 일개미는 많을수록 좋아요. 초반에 최대한 고용하세요!</div>
+  <!-- WEALTH -->
+  <div class="card">
+    <div class="ctitle">💎 자산 현황</div>
+    <div class="big-num" id="w-net">1,000</div>
+    <div class="big-label">순자산</div>
+    <div class="gbar-wrap" style="margin-top:10px">
+      <div class="gbar-lbl"><span>목표 10,000</span><span id="w-pct">10%</span></div>
+      <div class="gbar"><div class="gfill" id="w-bar" style="width:10%"></div></div>
+    </div>
+    <div class="port-row"><span class="port-name">💵 현금</span><span class="port-val" id="w-cash">1,000</span></div>
+    <div class="port-row"><span class="port-name">🏦 저축</span><span class="port-val" id="w-save" style="color:var(--blue)">0</span></div>
+    <div class="port-row"><span class="port-name">📊 투자</span><span class="port-val" id="w-inv" style="color:var(--green)">0</span></div>
+    <div class="port-row"><span class="port-name">🌡️ 인플레</span><span class="port-val" id="w-inf" style="color:var(--orange)">3.0%</span></div>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
+    <div class="ctitle">📈 자산 추이</div>
+    <div id="chart"></div>
+    <div class="big-sub" id="chart-label" style="color:var(--dim);font-size:.72rem;margin-top:6px;text-align:center">최근 20분기</div>
+  </div>
+
+  <!-- AUTO STRATEGY -->
+  <div class="card">
+    <div class="ctitle">🤖 자동 전략</div>
+    <div class="strat-grid" id="strat-grid">
+      <div class="strat-btn on" id="s-safe" onclick="setStrat('safe',this)">
+        <div class="se">🏦</div>
+        <div class="sn">안전형</div>
+        <div class="sd">저축 위주</div>
+      </div>
+      <div class="strat-btn" id="s-balanced" onclick="setStrat('balanced',this)">
+        <div class="se">⚖️</div>
+        <div class="sn">균형형</div>
+        <div class="sd">채권+주식</div>
+      </div>
+      <div class="strat-btn" id="s-growth" onclick="setStrat('growth',this)">
+        <div class="se">📊</div>
+        <div class="sn">성장형</div>
+        <div class="sd">주식 집중</div>
+      </div>
+      <div class="strat-btn" id="s-yolo" onclick="setStrat('yolo',this)">
+        <div class="se">🪙</div>
+        <div class="sn">욜로형</div>
+        <div class="sd">코인 올인</div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--dim);margin-top:10px;text-align:center">전략을 바꾸면 자동으로 재투자해요</div>
+  </div>
+
+  <!-- MANUAL -->
+  <div class="card">
+    <div class="ctitle">⚡ 수동 행동</div>
+    <button class="man-btn" onclick="manBuyAnt()">🐜 개미 5마리 즉시 고용<span class="cost">-250</span></button>
+    <button class="man-btn" onclick="manCashOut()">💸 투자 전액 회수</button>
+    <button class="man-btn" onclick="manBoost()">🚀 긴급 자금 투입<span class="cost">-100</span></button>
+    <div style="font-size:.7rem;color:var(--dim);margin-top:4px">수동 행동은 즉시 실행돼요</div>
+  </div>
+
+  <!-- LOG -->
+  <div class="card">
+    <div class="ctitle">📋 실시간 로그</div>
+    <div id="log"></div>
+  </div>
+
+  <!-- MILESTONES -->
+  <div class="card full">
+    <div class="ctitle">🏅 달성 업적</div>
+    <div class="ms-grid">
+      <div class="ms" id="ms-1">🐜 개미 10마리</div>
+      <div class="ms" id="ms-2">💰 순자산 2,000</div>
+      <div class="ms" id="ms-3">🚀 순자산 5,000</div>
+      <div class="ms" id="ms-4">🏦 저축 1,000</div>
+      <div class="ms" id="ms-5">📊 투자수익 +500</div>
+      <div class="ms" id="ms-6">🛡️ 20분기 생존</div>
+      <div class="ms" id="ms-7">👑 개미 50마리</div>
+      <div class="ms" id="ms-8">💎 순자산 8,000</div>
+    </div>
   </div>
 
 </div>
 
 <!-- GAMEOVER -->
-<div id="gameover" style="display:none;position:fixed;inset:0;background:#000c;z-index:800;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:20px">
+<div id="gameover">
   <div class="go-box">
-    <h2 id="go-title">🏆 승리!</h2>
+    <h2 id="go-title">🏆</h2>
     <p id="go-msg"></p>
-    <div class="go-stats" id="go-stats"></div>
+    <div id="go-stats"></div>
     <button class="go-btn" onclick="resetGame()">다시 도전!</button>
   </div>
 </div>
 
+<!-- TICKER -->
+<div class="ticker">
+  <div class="tick-inner">💡 개미가 많을수록 수입이 늘어요 &nbsp;|&nbsp; 🌡️ 인플레이션을 이기려면 투자가 필수 &nbsp;|&nbsp; 🪙 욜로 전략은 위험하지만 짜릿해요 &nbsp;|&nbsp; ⚖️ 균형 전략이 가장 안정적이에요 &nbsp;|&nbsp; 🚀 긴급 자금 투입으로 위기를 탈출하세요</div>
+</div>
+
 <script>
-const INV = {
-  savings: { name:'저축', emoji:'💵', qRate:()=>0.005, riskChance:0 },
-  bond:    { name:'채권', emoji:'📜', qRate:()=>rand(1,1.5)/100, riskChance:0.03 },
-  stock:   { name:'주식', emoji:'📊', qRate:()=>rand(-5,7.5)/100, riskChance:0.1 },
-  crypto:  { name:'코인', emoji:'🪙', qRate:()=>rand(-12.5,25)/100, riskChance:0.2 },
+// ════════════════════════════════════
+// 🐜 ANT FINANCE IDLE ENGINE
+// ant money_bot — auto edition
+// ════════════════════════════════════
+
+const STRATEGIES = {
+  safe:     { name:'안전형', savingsRate:.7, bondRate:.3, stockRate:0, cryptoRate:0 },
+  balanced: { name:'균형형', savingsRate:.2, bondRate:.3, stockRate:.4, cryptoRate:.1 },
+  growth:   { name:'성장형', savingsRate:.1, bondRate:.1, stockRate:.7, cryptoRate:.1 },
+  yolo:     { name:'욜로형', savingsRate:0,  bondRate:0,  stockRate:.2, cryptoRate:.8 },
 };
 
 const EVENTS = [
-  { id:'gold_rush', icon:'⛏️', title:'황금 개미굴 발견!', desc:'콜로니 근처에서 자원이 쏟아졌어요!',
-    effect: s=>{ const g=rand(100,300)|0; s.cash+=g; return {cls:'profit',txt:`+${g} 자원 획득!`}; }},
-  { id:'drought', icon:'🏜️', title:'극심한 가뭄!', desc:'자원 수급이 끊겼어요.',
-    effect: s=>{ const l=Math.min(s.cash*.15|0,150); s.cash-=l; return {cls:'loss',txt:`-${l} 자원 손실`}; }},
-  { id:'market_crash', icon:'📉', title:'시장 대폭락!', desc:'글로벌 금융위기... 투자 자산이 줄었어요.',
-    effect: s=>{ if(s.invested>0){const l=s.invested*.3|0; s.invested-=l; return {cls:'loss',txt:`투자 -${l}`};} return {cls:'info',txt:'피해 없음!'}; }},
-  { id:'boom', icon:'🚀', title:'경제 대호황!', desc:'모든 투자 수익률이 급등!',
-    effect: s=>{ if(s.invested>0){const g=s.invested*.2|0; s.invested+=g; return {cls:'profit',txt:`투자 +${g}!`};} return {cls:'info',txt:'투자 자산 없어요...'}; }},
-  { id:'ant_revolt', icon:'😤', title:'개미 파업!', desc:'일개미들이 파업 선언! 다음 분기 수입 반토막.',
-    effect: s=>{ s.strikeNext=true; return {cls:'loss',txt:'다음 분기 수입 50% 감소!'}; }},
-  { id:'colony_growth', icon:'🎉', title:'콜로니 번성!', desc:'개미들이 자발적으로 번식했어요!',
-    effect: s=>{ const b=Math.max(1,s.ants*.1|0); s.ants+=b; return {cls:'profit',txt:`개미 +${b}마리!`}; }},
-  { id:'inflation_spike', icon:'🌡️', title:'인플레이션 급등!', desc:'중앙은행이 금리를 올렸어요!',
-    effect: s=>{ s.inflation=Math.min(.12,s.inflation+.02); return {cls:'loss',txt:`인플레 +2%p → ${(s.inflation*100).toFixed(1)}%`}; }},
-  { id:'tax_rebate', icon:'🧾', title:'세금 환급!', desc:'정부가 개미 농가를 지원해요!',
-    effect: s=>{ const g=rand(50,200)|0; s.cash+=g; return {cls:'profit',txt:`+${g} 환급!`}; }},
+  { icon:'⛏️', title:'황금 개미굴 발견!', type:'g', effect: s=>{ const g=ri(80,250); s.cash+=g; return `+${g} 자원 획득`; }},
+  { icon:'🏜️', title:'극심한 가뭄!', type:'r', effect: s=>{ const l=Math.min(ri(50,120),s.cash*.2|0); s.cash=Math.max(0,s.cash-l); return `-${l} 자원 손실`; }},
+  { icon:'📉', title:'시장 폭락!', type:'r', effect: s=>{ if(s.inv>0){const l=s.inv*.25|0; s.inv-=l; return `투자 -${l}`} return '피해 없음'; }},
+  { icon:'🚀', title:'경제 대호황!', type:'g', effect: s=>{ if(s.inv>0){const g=s.inv*.2|0; s.inv+=g; return `투자 +${g}`} return '호황이지만 투자없음'; }},
+  { icon:'😤', title:'개미 파업!', type:'r', effect: s=>{ s.strike=true; return '다음 분기 수입 반토막!'; }},
+  { icon:'🎉', title:'콜로니 번성!', type:'g', effect: s=>{ const b=Math.max(1,s.ants*.15|0); s.ants+=b; return `개미 +${b}마리`; }},
+  { icon:'🌡️', title:'인플레 급등!', type:'r', effect: s=>{ s.inf=Math.min(.12,s.inf+.025); return `인플레 → ${(s.inf*100).toFixed(1)}%`; }},
+  { icon:'🧾', title:'세금 환급!', type:'g', effect: s=>{ const g=ri(60,180); s.cash+=g; return `+${g} 환급`; }},
+  { icon:'🐛', title:'해충 습격!', type:'r', effect: s=>{ const l=Math.max(1,s.ants*.1|0); s.ants=Math.max(1,s.ants-l); return `개미 -${l}마리 피해`; }},
+  { icon:'💧', title:'풍년!', type:'g', effect: s=>{ s.cash+=ri(50,150); s.ants+=ri(1,3)|0; return '수입과 콜로니 성장!'; }},
 ];
 
-let state, selectedInv=null, achievements={};
-function rand(a,b){ return Math.random()*(b-a)+a; }
+let s={}, strat='safe', paused=false, speed=1, timer=null, history=[], ms={};
+let totalGain=0;
+
+function ri(a,b){ return Math.random()*(b-a)+a|0; }
+function rf(a,b){ return Math.random()*(b-a)+a; }
 function fmt(n){ return Math.round(n).toLocaleString('ko-KR'); }
+function nw(){ return s.cash+s.sav+s.inv; }
 
 function initState(){
-  state={ cash:1000, savings:0, invested:0, investType:null, ants:1, turn:1, inflation:.03, inflationFactor:1, strikeNext:false };
-  achievements={};
-  selectedInv=null;
-  document.querySelectorAll('.inv-card').forEach(c=>c.classList.remove('selected'));
+  s={ cash:1000, sav:0, inv:0, ants:1, turn:1, inf:.03, strike:false };
+  strat='safe'; history=[1000]; totalGain=0; ms={};
+  document.querySelectorAll('.strat-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('s-safe').classList.add('on');
 }
 
-function startGame(){
-  document.getElementById('tutorial').style.display='none';
-  updateUI();
-  addLog('게임 시작! 목표: 순자산 10,000 달성 🏆','info');
+// ── AUTO INVEST based on strategy ──
+function autoInvest(){
+  const cfg=STRATEGIES[strat];
+  const total=s.cash;
+  if(total<50) return;
+
+  const keep=50; // keep at least 50 cash
+  const invest=Math.max(0,total-keep);
+  if(invest<20) return;
+
+  const toSav=invest*cfg.savingsRate|0;
+  const toBond=invest*cfg.bondRate|0;
+  const toStock=invest*cfg.stockRate|0;
+  const toCrypto=invest*cfg.cryptoRate|0;
+
+  if(toSav>0){ s.cash-=toSav; s.sav+=toSav; }
+  // Bond/Stock/Crypto all go to "invested" pool (simplified single pool)
+  const toInv=toBond+toStock+toCrypto;
+  if(toInv>0){ s.cash-=toInv; s.inv+=toInv; }
 }
 
-function selectInv(type,el){
-  selectedInv=type;
-  document.querySelectorAll('.inv-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
+// ── QUARTERLY RETURNS ──
+function getReturn(){
+  const cfg=STRATEGIES[strat];
+  const total=(cfg.bondRate+cfg.stockRate+cfg.cryptoRate)||1;
+  let r=0;
+  if(cfg.bondRate)  r+=cfg.bondRate/total * rf(1,1.5)/100;
+  if(cfg.stockRate) r+=cfg.stockRate/total * rf(-5,7.5)/100;
+  if(cfg.cryptoRate)r+=cfg.cryptoRate/total * rf(-12.5,25)/100;
+  return r;
 }
 
-function doInvest(){
-  if(!selectedInv){ showToast('먼저 투자 종류를 선택하세요!','info'); return; }
-  const amount=parseInt(document.getElementById('inv-range').value);
-  if(amount>state.cash){ showToast('현금이 부족해요!','loss'); return; }
-  const prof=INV[selectedInv];
-  state.cash-=amount;
-  if(selectedInv==='savings'){
-    state.savings+=amount;
-    addLog(`${prof.emoji} 저축 ${fmt(amount)} 예치 (연 2% 복리)`,'info');
-    showToast(`💵 저축 ${fmt(amount)} 예치!`,'info');
-    floatNumber('+'+fmt(amount),'var(--blue)');
-  } else {
-    if(prof.riskChance&&Math.random()<prof.riskChance){
-      const lost=amount*rand(.05,.2)|0;
-      state.invested+=(amount-lost); state.investType=selectedInv;
-      addLog(`⚠️ ${prof.emoji} 진입 중 손실 -${fmt(lost)}, ${fmt(amount-lost)} 투자됨`,'loss');
-      showToast(`⚠️ ${prof.name} 진입 손실 -${fmt(lost)}`,'loss');
-    } else {
-      state.invested+=amount; state.investType=selectedInv;
-      addLog(`${prof.emoji} ${prof.name} ${fmt(amount)} 투자 시작`,'info');
-      showToast(`${prof.emoji} ${prof.name} ${fmt(amount)} 투자!`,'info');
-    }
+// ── ONE TURN ──
+function tick(){
+  s.turn++;
+
+  // Auto invest spare cash
+  autoInvest();
+
+  // Savings interest
+  if(s.sav>0){
+    const i=s.sav*.005|0;
+    s.sav+=i;
+    if(i>0){ log(`💵 저축 이자 +${fmt(i)}`,'p'); float('+'+fmt(i),'var(--blue)'); }
   }
-  unlockAch('first-invest');
-  updateUI();
-}
 
-function nextTurn(){
-  state.turn++;
-  if(state.savings>0){ const i=state.savings*.005|0; state.savings+=i; if(i>0){addLog(`💵 저축 이자 +${fmt(i)} (복리)`,'profit'); floatNumber('+'+fmt(i),'var(--blue)');} }
-  if(state.invested>0&&state.investType){
-    const prof=INV[state.investType];
-    const ret=prof.qRate(); const gain=state.invested*ret|0;
-    state.invested+=gain; if(state.invested<0) state.invested=0;
-    addLog(`${gain>=0?'📈':'📉'} ${prof.name} ${gain>=0?'+':''}${fmt(gain)} (분기 ${(ret*100).toFixed(1)}%)`,gain>=0?'profit':'loss');
-    if(gain>0) floatNumber('+'+fmt(gain),'var(--green)');
-    else if(gain<0) floatNumber(fmt(gain),'var(--red)');
-    if(selectedInv==='crypto'&&gain>200) unlockAch('crypto-win');
+  // Investment returns
+  if(s.inv>0){
+    const ret=getReturn();
+    const gain=s.inv*ret|0;
+    s.inv=Math.max(0,s.inv+gain);
+    totalGain+=gain;
+    if(gain>=0){ log(`📈 투자수익 +${fmt(gain)} (${(ret*100).toFixed(1)}%)`,'p'); float('+'+fmt(gain),'var(--green)'); }
+    else { log(`📉 투자손실 ${fmt(gain)} (${(ret*100).toFixed(1)}%)`,'l'); float(fmt(gain),'var(--red)'); }
   }
-  let income=state.ants*10;
-  if(state.strikeNext){ income=income/2|0; state.strikeNext=false; addLog('😤 파업으로 수입 반토막!','loss'); }
-  state.cash+=income;
-  addLog(`🐜 개미 ${state.ants}마리 → +${fmt(income)} 수입`,'profit');
-  floatNumber('+'+fmt(income),'var(--gold)');
-  state.inflationFactor*=(1+state.inflation/4);
-  state.inflation=Math.max(.01,Math.min(.12,state.inflation+rand(-.002,.002)));
-  addLog(`🌡️ 인플레이션 ${(state.inflation*100).toFixed(1)}%`,'loss');
-  if(Math.random()<.3) triggerEvent();
-  if(state.turn>=10) unlockAch('survived');
-  const nw=netWorth();
-  if(nw>=2000) unlockAch('2000');
-  if(nw>=5000) unlockAch('5000');
-  if(state.ants>=10) unlockAch('10ants');
-  if(nw>=10000){ endGame(true); return; }
-  if(nw<=0){ endGame(false); return; }
+
+  // Auto buy ants when cash accumulates
+  const targetAnts = Math.floor(nw()/200);
+  if(s.ants < targetAnts && s.cash>=50){
+    const buy=Math.min(targetAnts-s.ants, Math.floor(s.cash/50));
+    s.cash-=buy*50; s.ants+=buy;
+    log(`🐜 자동 고용 +${buy}마리 (총 ${s.ants}마리)`,'i');
+    float('+'+buy+'🐜','var(--text)');
+  }
+
+  // Ant income
+  let income=s.ants*10;
+  if(s.strike){ income=income/2|0; s.strike=false; log('😤 파업 — 수입 반토막!','l'); }
+  s.cash+=income;
+  log(`🐜 ${s.ants}마리 → +${fmt(income)}`,'p');
+  float('+'+fmt(income),'var(--gold)');
+
+  // Inflation
+  s.inf=Math.max(.01,Math.min(.12,s.inf+rf(-.002,.002)));
+  log(`🌡️ 인플레 ${(s.inf*100).toFixed(1)}%`,'l');
+
+  // Random event ~25%
+  if(Math.random()<.25) doEvent();
+
+  // History
+  history.push(nw());
+  if(history.length>20) history.shift();
+
+  // Milestones
+  checkMs();
+
+  // Win/Lose
+  const n=nw();
+  if(n>=10000){ endGame(true); return; }
+  if(n<=0 && s.turn>5){ endGame(false); return; }
+
   updateUI();
 }
 
-function netWorth(){ return state.cash+state.savings+state.invested; }
-
-function buyAnts(){ if(state.cash<50){showToast('현금 50 필요!','loss');return;} state.cash-=50; state.ants++; addLog(`🐜 일개미 고용! 총 ${state.ants}마리`,'info'); showToast(`🐜 고용! 이제 ${state.ants}마리`,'info'); floatNumber('+1🐜','var(--text)'); unlockAch('10ants'); updateUI(); }
-function withdrawSavings(){ if(state.savings<=0){showToast('저축 잔액 없음','loss');return;} const a=state.savings; state.cash+=a; state.savings=0; addLog(`🏦 저축 인출 +${fmt(a)}`,'info'); showToast(`🏦 인출 +${fmt(a)}`,'info'); updateUI(); }
-function withdrawInvested(){ if(state.invested<=0){showToast('투자 자산 없음','loss');return;} const a=state.invested; state.cash+=a; state.invested=0; state.investType=null; addLog(`💸 투자 회수 +${fmt(a)}`,'info'); showToast(`💸 회수 +${fmt(a)}`,'info'); updateUI(); }
-function resetGame(){ document.getElementById('gameover').style.display='none'; document.getElementById('log').innerHTML=''; initState(); updateUI(); addLog('게임 재시작! 목표: 10,000 달성 🏆','info'); }
-
-function triggerEvent(){
+function doEvent(){
   const ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
-  const result=ev.effect(state);
-  document.getElementById('event-icon').textContent=ev.icon;
-  document.getElementById('event-title').textContent=ev.title;
-  document.getElementById('event-desc').textContent=ev.desc;
-  const el=document.getElementById('event-effect'); el.textContent=result.txt; el.className=result.cls;
-  document.getElementById('event-popup').classList.add('show');
-  addLog(`⚡ 이벤트: ${ev.title} → ${result.txt}`,'event');
-  showToast(`⚡ ${ev.title}`,'event');
+  const result=ev.effect(s);
+  showBanner(`${ev.icon} ${ev.title} — ${result}`, ev.type==='g'?'var(--green)':'var(--red)');
+  log(`⚡ ${ev.title}: ${result}`,'e');
+  toast(`${ev.icon} ${ev.title}`, ev.type==='g'?'y':'r');
 }
-function closeEvent(){ document.getElementById('event-popup').classList.remove('show'); updateUI(); }
 
-const MOODS=[[1,'조용한 콜로니...'],[5,'활기 넘치는 콜로니!'],[15,'🔥 개미 군단 형성!'],[30,'👑 제국급 콜로니!!!']];
-function getColonyMood(n){ let m=MOODS[0][1]; for(const[t,s] of MOODS) if(n>=t) m=s; return m; }
-
+// ── UI ──
 function updateUI(){
-  const nw=netWorth();
-  document.getElementById('hud-cash').textContent=fmt(state.cash);
-  document.getElementById('hud-net').textContent=fmt(nw);
-  document.getElementById('hud-ants').textContent=state.ants;
-  document.getElementById('hud-turn').textContent=state.turn;
-  document.getElementById('hud-inflation').textContent=(state.inflation*100).toFixed(1)+'%';
-  document.getElementById('stat-invested').textContent=fmt(state.invested);
-  document.getElementById('stat-savings').textContent=fmt(state.savings);
-  const goalPct=Math.min(nw/10000*100,100);
-  document.getElementById('goal-bar').style.width=goalPct+'%';
-  document.getElementById('goal-pct').textContent=goalPct.toFixed(1)+'%';
-  const antShow=Math.min(state.ants,20);
-  document.getElementById('colony-vis').textContent='🐜'.repeat(antShow)+(state.ants>20?` ×${state.ants}`:'');
-  document.getElementById('colony-mood').textContent=getColonyMood(state.ants);
-  document.getElementById('colony-lbl').textContent=state.ants+'마리';
-  document.getElementById('colony-bar').style.width=Math.min(state.ants,100)+'%';
-  const maxInv=Math.max(10,Math.floor(state.cash/10)*10);
-  document.getElementById('inv-range').max=Math.min(maxInv,100000);
-  document.getElementById('inv-max').textContent='보유: '+fmt(state.cash);
-  syncSlider();
-}
-function syncSlider(){ document.getElementById('inv-val').textContent=fmt(document.getElementById('inv-range').value); }
+  const n=nw();
+  document.getElementById('cnt-ants').textContent=fmt(s.ants)+'마리';
+  document.getElementById('cnt-income').textContent='+'+fmt(s.ants*10);
+  document.getElementById('cnt-turn').textContent='Q'+s.turn;
 
-function showToast(msg,type='info'){
-  const c=document.getElementById('toast-container');
-  const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; c.appendChild(t);
+  document.getElementById('w-net').textContent=fmt(n);
+  document.getElementById('w-cash').textContent=fmt(s.cash);
+  document.getElementById('w-save').textContent=fmt(s.sav);
+  document.getElementById('w-inv').textContent=fmt(s.inv);
+  document.getElementById('w-inf').textContent=(s.inf*100).toFixed(1)+'%';
+
+  const pct=Math.min(n/10000*100,100);
+  document.getElementById('w-bar').style.width=pct+'%';
+  document.getElementById('w-pct').textContent=pct.toFixed(1)+'%';
+
+  // Colony visual
+  const cc=document.getElementById('colony-canvas');
+  const show=Math.min(s.ants,60);
+  cc.textContent='🐜'.repeat(show)+(s.ants>60?` ×${s.ants}`:'');
+
+  // Chart
+  drawChart();
+}
+
+function drawChart(){
+  const el=document.getElementById('chart');
+  el.innerHTML='';
+  if(history.length<2) return;
+  const max=Math.max(...history)||1;
+  const w=el.offsetWidth||200;
+  const bw=Math.max(3,Math.floor(w/history.length)-1);
+  history.forEach((v,i)=>{
+    const bar=document.createElement('div');
+    bar.className='chart-bar';
+    bar.style.left=(i*(bw+1))+'px';
+    bar.style.width=bw+'px';
+    bar.style.height=Math.max(2,v/max*75)+'px';
+    bar.style.opacity=.4+.6*(i/history.length);
+    el.appendChild(bar);
+  });
+}
+
+// ── CONTROLS ──
+function setSpeed(sp){
+  speed=sp;
+  document.querySelectorAll('.spd-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('spd'+sp).classList.add('active');
+  restartTimer();
+}
+function togglePause(){
+  paused=!paused;
+  const btn=document.getElementById('pause-btn');
+  btn.textContent=paused?'▶ 계속하기':'⏸ 일시정지';
+  btn.classList.toggle('paused',paused);
+  if(!paused) restartTimer(); else clearInterval(timer);
+}
+function restartTimer(){
+  clearInterval(timer);
+  if(!paused) timer=setInterval(tick, Math.max(200,2000/speed));
+}
+
+function setStrat(id,el){
+  strat=id;
+  document.querySelectorAll('.strat-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  toast(`전략 변경: ${STRATEGIES[id].name}`,'y');
+  log(`🤖 전략 변경 → ${STRATEGIES[id].name}`,'i');
+}
+
+// ── MANUAL ──
+function manBuyAnt(){
+  if(s.cash<250){ toast('현금 250 필요!','r'); return; }
+  s.cash-=250; s.ants+=5;
+  log(`🐜 수동 고용 +5마리 (총 ${s.ants}마리)`,'i');
+  toast('🐜 개미 5마리 고용!','y');
+  float('+5🐜','var(--text)');
+  updateUI();
+}
+function manCashOut(){
+  if(s.inv<=0&&s.sav<=0){ toast('회수할 자산 없음','r'); return; }
+  s.cash+=s.inv+s.sav; s.inv=0; s.sav=0;
+  log(`💸 전액 현금화`,'i');
+  toast('💸 전액 회수!','y');
+  updateUI();
+}
+function manBoost(){
+  if(s.cash<100){ toast('현금 100 필요!','r'); return; }
+  s.cash-=100; s.ants+=Math.floor(s.ants*.2)||1;
+  log(`🚀 긴급 부스트! 개미 증가`,'i');
+  toast('🚀 부스트!','y');
+  updateUI();
+}
+
+// ── MILESTONE ──
+function checkMs(){
+  const n=nw();
+  const check=[
+    ['ms-1', s.ants>=10],
+    ['ms-2', n>=2000],
+    ['ms-3', n>=5000],
+    ['ms-4', s.sav>=1000],
+    ['ms-5', totalGain>=500],
+    ['ms-6', s.turn>=20],
+    ['ms-7', s.ants>=50],
+    ['ms-8', n>=8000],
+  ];
+  check.forEach(([id,cond])=>{
+    if(cond&&!ms[id]){
+      ms[id]=true;
+      document.getElementById(id)?.classList.add('done');
+      toast('🏅 업적: '+document.getElementById(id)?.textContent,'y');
+    }
+  });
+}
+
+// ── LOG ──
+function log(msg,type='i'){
+  const el=document.getElementById('log');
+  const d=document.createElement('div');
+  d.className='le '+type;
+  d.textContent=`[Q${s.turn}] ${msg}`;
+  el.prepend(d);
+  while(el.children.length>50) el.removeChild(el.lastChild);
+}
+
+// ── TOAST ──
+function toast(msg,type='y'){
+  const c=document.getElementById('toast-box');
+  const t=document.createElement('div');
+  t.className='toast '+type; t.textContent=msg; c.appendChild(t);
   requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
-  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); },2500);
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),300); },2200);
 }
-function floatNumber(txt,color){
-  const el=document.createElement('div'); el.className='float-num'; el.textContent=txt; el.style.color=color;
-  el.style.left=(25+Math.random()*50)+'vw'; el.style.top=(25+Math.random()*35)+'vh';
-  document.body.appendChild(el); setTimeout(()=>el.remove(),1300);
+
+// ── FLOAT ──
+function float(txt,color){
+  const el=document.createElement('div');
+  el.className='float-num'; el.textContent=txt; el.style.color=color;
+  el.style.left=(20+Math.random()*60)+'vw';
+  el.style.top=(20+Math.random()*50)+'vh';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1500);
 }
-function unlockAch(id){
-  if(achievements[id]) return; achievements[id]=true;
-  const el=document.getElementById('ach-'+id);
-  if(el){ el.classList.add('unlocked'); showToast('🏅 업적: '+el.textContent.trim(),'info'); }
+
+// ── BANNER ──
+let bannerTimer=null;
+function showBanner(msg,color){
+  const b=document.getElementById('ev-banner');
+  b.textContent=msg; b.style.color=color;
+  b.classList.add('show');
+  clearTimeout(bannerTimer);
+  bannerTimer=setTimeout(()=>b.classList.remove('show'),3000);
 }
-function addLog(msg,type='info'){
-  const log=document.getElementById('log');
-  const el=document.createElement('div'); el.className='log-entry '+type; el.textContent=`[Q${state.turn}] ${msg}`;
-  log.prepend(el); while(log.children.length>40) log.removeChild(log.lastChild);
-}
+
+// ── GAME OVER ──
 function endGame(won){
-  const nw=netWorth();
-  document.getElementById('go-title').textContent=won?'🏆 목표 달성!':'💸 파산...';
-  document.getElementById('go-msg').textContent=won?`${state.turn}분기 만에 성공! 최고의 개미 재테커!`:`${state.turn}분기에 모든 자산을 잃었어요.`;
-  document.getElementById('go-stats').innerHTML=`<div class="go-stat"><span>최종 순자산</span><span>${fmt(nw)}</span></div><div class="go-stat"><span>총 분기</span><span>${state.turn}분기</span></div><div class="go-stat"><span>개미 수</span><span>${state.ants}마리</span></div>`;
+  clearInterval(timer);
+  const n=nw();
+  document.getElementById('go-title').textContent=won?'🏆 개미 제국 달성!':'💸 파산...';
+  document.getElementById('go-msg').textContent=won
+    ?`${s.turn}분기 만에 목표 달성! 전략: ${STRATEGIES[strat].name}`
+    :`${s.turn}분기에 자산이 바닥났어요.`;
+  document.getElementById('go-stats').innerHTML=
+    `<div class="go-stat"><span>최종 순자산</span><span>${fmt(n)}</span></div>`+
+    `<div class="go-stat"><span>개미 수</span><span>${fmt(s.ants)}마리</span></div>`+
+    `<div class="go-stat"><span>총 분기</span><span>${s.turn}</span></div>`+
+    `<div class="go-stat"><span>전략</span><span>${STRATEGIES[strat].name}</span></div>`;
   document.getElementById('gameover').style.display='flex';
 }
 
+function resetGame(){
+  clearInterval(timer);
+  document.getElementById('gameover').style.display='none';
+  document.getElementById('log').innerHTML='';
+  paused=false;
+  document.getElementById('pause-btn').textContent='⏸ 일시정지';
+  document.getElementById('pause-btn').classList.remove('paused');
+  initState(); updateUI();
+  log('게임 시작! 자동으로 굴러갑니다 🐜','i');
+  restartTimer();
+}
+
+// START
 initState();
+updateUI();
+log('게임 시작! 자동으로 굴러갑니다 🐜','i');
+restartTimer();
 </script>
 </body>
 </html>
