@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나 vs 재벌 — 지금 이 순간</title>
+<meta property="og:title" content="나 vs 재벌 — 지금 이 순간 얼마나 벌었나?">
+<meta property="og:description" content="당신이 이 페이지를 보는 동안 재벌은 얼마를 벌었을까요?">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#060608;--gold:#ffd700;--red:#ff4444;--blue:#4488ff;--dim:#555;--text:#eee}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+
+/* HEADER */
+.hdr{text-align:center;padding:40px 20px 24px}
+.hdr h1{font-size:1.5rem;font-weight:900;color:#aaa;letter-spacing:2px}
+.hdr .live{display:inline-block;background:#ff4444;color:#fff;font-size:.65rem;font-weight:900;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* SALARY INPUT */
+.salary-wrap{background:#0d0d14;border:1px solid #1a1a2e;border-radius:16px;padding:24px 32px;margin-bottom:32px;text-align:center;width:100%;max-width:400px}
+.salary-wrap label{font-size:.82rem;color:var(--dim);display:block;margin-bottom:10px}
+.salary-input-row{display:flex;align-items:center;gap:8px;justify-content:center}
+.salary-input-row input{background:#060608;border:1px solid #2a2a40;border-radius:10px;color:var(--gold);font-size:1.4rem;font-weight:900;width:160px;text-align:center;padding:8px;outline:none;font-family:inherit}
+.salary-input-row input:focus{border-color:var(--gold)}
+.salary-input-row span{font-size:.9rem;color:var(--dim)}
+.salary-note{font-size:.72rem;color:var(--dim);margin-top:8px}
+
+/* VS ARENA */
+.arena{width:100%;max-width:860px;padding:0 16px;display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:start;margin-bottom:32px}
+
+/* CARDS */
+.side{background:#0d0d14;border:1px solid #1a1a2e;border-radius:20px;padding:24px 20px;text-align:center;position:relative;overflow:hidden}
+.side.me{border-color:#1a2a4a}
+.side.them{border-color:#2a1a1a}
+.side .flag{position:absolute;top:0;left:0;right:0;height:3px}
+.side.me .flag{background:linear-gradient(90deg,#1144aa,#4488ff)}
+.side.them .flag{background:linear-gradient(90deg,#aa1111,#ff4444)}
+.side .avatar{font-size:3rem;margin-bottom:8px}
+.side .who{font-size:.8rem;color:var(--dim);margin-bottom:4px}
+.side .name{font-size:1rem;font-weight:900;margin-bottom:16px}
+.side.me .name{color:var(--blue)}
+.side.them .name{color:var(--red)}
+.side .per-sec-label{font-size:.68rem;color:var(--dim);margin-bottom:4px}
+.side .per-sec{font-size:1rem;font-weight:700;margin-bottom:20px}
+.side.me .per-sec{color:var(--blue)}
+.side.them .per-sec{color:var(--red)}
+
+/* COUNTER */
+.counter-label{font-size:.68rem;color:var(--dim);margin-bottom:4px}
+.counter{font-size:2.2rem;font-weight:900;line-height:1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.side.me .counter{color:var(--blue)}
+.side.them .counter{color:var(--red)}
+.counter-unit{font-size:.8rem;color:var(--dim);margin-top:4px}
+
+/* VS CIRCLE */
+.vs-col{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 12px;gap:12px;padding-top:60px}
+.vs-circle{width:52px;height:52px;border-radius:50%;background:#111;border:2px solid #333;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;color:#666}
+.time-badge{background:#111;border:1px solid #222;border-radius:20px;padding:6px 14px;font-size:.78rem;color:var(--dim);text-align:center;white-space:nowrap}
+#elapsed{color:var(--gold);font-weight:900}
+
+/* RATIO BAR */
+.ratio-wrap{width:100%;max-width:860px;padding:0 16px;margin-bottom:28px}
+.ratio-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--dim);margin-bottom:8px;padding:0 4px}
+.ratio-bar{height:12px;background:#111;border-radius:20px;overflow:hidden;border:1px solid #1a1a2e;position:relative}
+.ratio-fill{height:100%;background:linear-gradient(90deg,var(--red),#ff8844);border-radius:20px;transition:width .5s;min-width:2px}
+.ratio-me{position:absolute;right:0;height:100%;background:linear-gradient(90deg,#2244aa,var(--blue));border-radius:20px;transition:width .5s;min-width:2px}
+.ratio-info{text-align:center;font-size:.82rem;color:var(--dim);margin-top:8px}
+.ratio-info strong{color:var(--red)}
+
+/* BOSS SELECTOR */
+.boss-wrap{width:100%;max-width:860px;padding:0 16px;margin-bottom:28px}
+.boss-title{font-size:.75rem;color:var(--dim);margin-bottom:10px;text-align:center;letter-spacing:1px;text-transform:uppercase}
+.boss-grid{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.boss-btn{background:#0d0d14;border:1px solid #1a1a2e;border-radius:10px;padding:8px 14px;cursor:pointer;transition:.2s;text-align:center;color:var(--text)}
+.boss-btn:hover,.boss-btn.on{border-color:var(--red);background:#1a0d0d}
+.boss-btn .bn{font-size:.78rem;font-weight:700;color:var(--red)}
+.boss-btn .bs{font-size:.65rem;color:var(--dim);margin-top:2px}
+
+/* SHOCKING FACTS */
+.facts{width:100%;max-width:860px;padding:0 16px;margin-bottom:32px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:600px){.facts{grid-template-columns:1fr 1fr}.arena{grid-template-columns:1fr;gap:12px}.vs-col{padding-top:0;flex-direction:row;justify-content:center}}
+.fact-card{background:#0d0d14;border:1px solid #1a1a2e;border-radius:14px;padding:16px;text-align:center}
+.fact-card .fi{font-size:1.6rem;margin-bottom:6px}
+.fact-card .fv{font-size:1.1rem;font-weight:900;color:var(--gold);margin-bottom:4px}
+.fact-card .fl{font-size:.72rem;color:var(--dim);line-height:1.4}
+
+/* SHARE */
+.share-wrap{text-align:center;margin-bottom:40px}
+.share-btn{background:#1a1a2e;border:1px solid #2a2a50;border-radius:12px;padding:12px 28px;color:var(--blue);font-size:.9rem;font-weight:700;cursor:pointer;transition:.2s}
+.share-btn:hover{background:#2a2a40;border-color:var(--blue)}
+.copied{color:var(--gold)!important;border-color:var(--gold)!important}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>나 vs 재벌 <span class="live">LIVE</span></h1>
+  <div style="font-size:.82rem;color:var(--dim);margin-top:8px">이 페이지를 보는 동안 그들은 얼마나 벌었을까요?</div>
+</div>
+
+<!-- SALARY INPUT -->
+<div class="salary-wrap">
+  <label>📌 내 연봉을 입력하세요</label>
+  <div class="salary-input-row">
+    <input type="number" id="my-salary" value="3600" min="100" max="100000" oninput="onSalaryChange()">
+    <span>만원 / 년</span>
+  </div>
+  <div class="salary-note">한국 직장인 평균 연봉: 약 3,600만원</div>
+</div>
+
+<!-- BOSS SELECTOR -->
+<div class="boss-wrap">
+  <div class="boss-title">비교 대상 선택</div>
+  <div class="boss-grid" id="boss-grid"></div>
+</div>
+
+<!-- VS ARENA -->
+<div class="arena">
+  <div class="side me">
+    <div class="flag"></div>
+    <div class="avatar">👤</div>
+    <div class="who">나</div>
+    <div class="name" id="my-name">직장인</div>
+    <div class="per-sec-label">초당 수입</div>
+    <div class="per-sec" id="my-per-sec">0.00원</div>
+    <div class="counter-label">지금까지 번 돈</div>
+    <div class="counter" id="my-counter">0</div>
+    <div class="counter-unit">원</div>
+  </div>
+
+  <div class="vs-col">
+    <div class="vs-circle">VS</div>
+    <div class="time-badge">경과 시간<br><span id="elapsed">00:00</span></div>
+  </div>
+
+  <div class="side them">
+    <div class="flag"></div>
+    <div class="avatar" id="boss-avatar">💰</div>
+    <div class="who">재벌</div>
+    <div class="name" id="boss-name">이재용</div>
+    <div class="per-sec-label">초당 수입</div>
+    <div class="per-sec" id="boss-per-sec">0원</div>
+    <div class="counter-label">지금까지 번 돈</div>
+    <div class="counter" id="boss-counter">0</div>
+    <div class="counter-unit">원</div>
+  </div>
+</div>
+
+<!-- RATIO BAR -->
+<div class="ratio-wrap">
+  <div class="ratio-label">
+    <span id="rl-boss">이재용</span>
+    <span id="rl-ratio">계산 중...</span>
+    <span>나</span>
+  </div>
+  <div class="ratio-bar">
+    <div class="ratio-fill" id="ratio-fill" style="width:99%"></div>
+    <div class="ratio-me" id="ratio-me" style="width:1%"></div>
+  </div>
+  <div class="ratio-info" id="ratio-info">로딩 중...</div>
+</div>
+
+<!-- FACTS -->
+<div class="facts" id="facts"></div>
+
+<!-- SHARE -->
+<div class="share-wrap">
+  <button class="share-btn" id="share-btn" onclick="copyShare()">🔗 이 결과 공유하기</button>
+</div>
+
+<script>
+// ── DATA ──
+const BOSSES = [
+  { id:'jy', name:'이재용', co:'삼성전자 회장', avatar:'💎', annualKrw: 100000000000 },   // 추정 ~1000억
+  { id:'mh', name:'최태원', co:'SK 회장', avatar:'💰', annualKrw: 60000000000 },
+  { id:'ej', name:'정의선', co:'현대차 회장', avatar:'🚗', annualKrw: 50000000000 },
+  { id:'ss', name:'손정의', co:'소프트뱅크 CEO', avatar:'🌐', annualKrw: 300000000000 }, // 추정
+  { id:'je', name:'일론 머스크', co:'테슬라/스페이스X', avatar:'🚀', annualKrw: 2000000000000 },
+  { id:'bf', name:'워런 버핏', co:'버크셔해서웨이', avatar:'📈', annualKrw: 500000000000 },
+];
+
+let selectedBoss = BOSSES[0];
+let mySalaryKrw = 36000000;
+let startTime = Date.now();
+let rafId;
+
+// ── INIT ──
+function buildBossGrid(){
+  const grid = document.getElementById('boss-grid');
+  grid.innerHTML = '';
+  BOSSES.forEach(b=>{
+    const btn = document.createElement('div');
+    btn.className = 'boss-btn' + (b.id===selectedBoss.id?' on':'');
+    btn.innerHTML = `<div class="bn">${b.avatar} ${b.name}</div><div class="bs">${b.co}</div>`;
+    btn.onclick = ()=>{ selectedBoss=b; startTime=Date.now(); buildBossGrid(); updateFacts(); };
+    grid.appendChild(btn);
+  });
+}
+
+function onSalaryChange(){
+  const v = parseInt(document.getElementById('my-salary').value)||3600;
+  mySalaryKrw = v * 10000;
+  startTime = Date.now();
+  updateFacts();
+}
+
+// ── ANIMATION LOOP ──
+function loop(){
+  const elapsed = (Date.now()-startTime)/1000;
+  const myPerSec = mySalaryKrw / (365.25*24*3600);
+  const bossPerSec = selectedBoss.annualKrw / (365.25*24*3600);
+
+  const myGain = myPerSec * elapsed;
+  const bossGain = bossPerSec * elapsed;
+
+  document.getElementById('elapsed').textContent = fmtTime(elapsed);
+  document.getElementById('my-counter').textContent = fmtNum(myGain);
+  document.getElementById('boss-counter').textContent = fmtNum(bossGain);
+  document.getElementById('my-per-sec').textContent = fmtNum(myPerSec, true)+'원/초';
+  document.getElementById('boss-per-sec').textContent = fmtNum(bossPerSec, true)+'원/초';
+
+  // Ratio bar
+  const ratio = bossGain/(myGain||1);
+  const myPct = Math.max(0.5, 100/(ratio+1));
+  const bossPct = 100-myPct;
+  document.getElementById('ratio-fill').style.width = bossPct+'%';
+  document.getElementById('ratio-me').style.width = myPct+'%';
+
+  const ratioRound = Math.round(ratio);
+  document.getElementById('rl-ratio').textContent = ratioRound >= 2 ? `${fmtNum(ratioRound)}배 차이` : '';
+  document.getElementById('ratio-info').innerHTML =
+    `${elapsed.toFixed(0)}초 동안 <strong>${selectedBoss.name}</strong>은 <strong>${fmtNum(bossGain)}원</strong>을 벌었어요`;
+
+  rafId = requestAnimationFrame(loop);
+}
+
+// ── FACTS ──
+function updateFacts(){
+  const myPerSec = mySalaryKrw/(365.25*24*3600);
+  const bossPerSec = selectedBoss.annualKrw/(365.25*24*3600);
+  const ratio = selectedBoss.annualKrw/mySalaryKrw;
+  const myDayWage = mySalaryKrw/365;
+  const bossDayWage = selectedBoss.annualKrw/365;
+  const coffeePrice = 6000;
+  const bossEarnCoffeeTime = coffeePrice/bossPerSec;
+
+  const data = [
+    { icon:'☕', val: bossEarnCoffeeTime<1 ? (bossEarnCoffeeTime*1000).toFixed(0)+'ms' : bossEarnCoffeeTime.toFixed(2)+'초',
+      label: `${selectedBoss.name}이 커피값(6천원) 버는 시간` },
+    { icon:'📅', val: fmtNum(ratio)+'배',
+      label: `${selectedBoss.name}의 연봉이 내 연봉보다` },
+    { icon:'⏰', val: fmtNum(bossDayWage/myDayWage)+'일치',
+      label: `내가 하루 일하는 동안 그가 버는 것과 같은 내 노동일수` },
+  ];
+
+  document.getElementById('facts').innerHTML = data.map(d=>`
+    <div class="fact-card">
+      <div class="fi">${d.icon}</div>
+      <div class="fv">${d.val}</div>
+      <div class="fl">${d.label}</div>
+    </div>
+  `).join('');
+}
+
+// ── UTILS ──
+function fmtNum(n, compact=false){
+  if(compact){
+    if(n>=100000000) return (n/100000000).toFixed(0)+'억';
+    if(n>=10000) return (n/10000).toFixed(1)+'만';
+    return n.toFixed(0);
+  }
+  if(n>=100000000) return (n/100000000).toFixed(1)+'억';
+  if(n>=10000) return Math.round(n/10000)+'만';
+  return Math.round(n).toLocaleString('ko-KR');
+}
+function fmtTime(s){
+  const m=Math.floor(s/60), sec=Math.floor(s%60);
+  return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+}
+
+function copyShare(){
+  const elapsed=(Date.now()-startTime)/1000;
+  const bossGain=selectedBoss.annualKrw/(365.25*24*3600)*elapsed;
+  const txt=`[나 vs 재벌]\n내가 ${Math.floor(elapsed)}초 이 페이지 보는 동안\n${selectedBoss.name}은 ${fmtNum(bossGain)}원을 벌었어요 😱`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById('share-btn');
+    btn.textContent='✅ 복사됨!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='🔗 이 결과 공유하기'; btn.classList.remove('copied'); },2000);
+  });
+}
+
+// ── START ──
+document.getElementById('my-name').textContent='직장인 ('+document.getElementById('my-salary').value+'만원)';
+document.getElementById('my-salary').addEventListener('input',()=>{
+  document.getElementById('my-name').textContent='직장인 ('+document.getElementById('my-salary').value+'만원)';
+});
+
+function updateBossDisplay(){
+  document.getElementById('boss-name').textContent=selectedBoss.name;
+  document.getElementById('boss-avatar').textContent=selectedBoss.avatar;
+  document.getElementById('rl-boss').textContent=selectedBoss.name;
+}
+
+// Watch for boss changes
+setInterval(updateBossDisplay, 100);
+
+buildBossGrid();
+updateFacts();
+loop();
+</script>
+</body>
+</html>

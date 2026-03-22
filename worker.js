@@ -1,4 +1,4 @@
-import html from './ant_finance_sim_v2.html';
+import html from './vs.html';
 
 export default {
   fetch() {
